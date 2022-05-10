@@ -28,6 +28,7 @@ const Giscus = () => {
       metadata,
       inputPosition,
       lang,
+      lazy,
     } = siteMetadata?.comment?.giscusConfig
 
     const script = document.createElement('script')
@@ -43,6 +44,9 @@ const Giscus = () => {
     script.setAttribute('data-lang', lang)
     script.setAttribute('data-theme', commentsTheme)
     script.setAttribute('crossorigin', 'anonymous')
+    if (lazy) {
+      script.setAttribute('data-loading', 'lazy')
+    }
     script.async = true
 
     const comments = document.getElementById(COMMENTS_ID)
@@ -61,9 +65,12 @@ const Giscus = () => {
     LoadComments()
   }, [LoadComments])
 
+  useEffect(() => {
+    LoadComments()
+  }, [])
+
   return (
     <div className="pt-6 pb-6 text-center text-gray-700 dark:text-gray-300">
-      {enableLoadComments && <button onClick={LoadComments}>Load Comments</button>}
       <div className="giscus" id={COMMENTS_ID} />
     </div>
   )

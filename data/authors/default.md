@@ -1,16 +1,12 @@
 ---
-name: Tails Azimuth
+name: Jacob
 avatar: /static/images/avatar.png
-occupation: Professor of Atmospheric Science
-company: Stanford University
-email: address@yoursite.com
-twitter: https://twitter.com/Twitter
-linkedin: https://www.linkedin.com
-github: https://github.com
+occupation: 前端工程师
+company: None
+email: jacob.liucs@gmail.com
+github: https://github.com/jacob-lcs
 ---
 
-Tails Azimuth is a professor of atmospheric sciences at the Stanford AI Lab. His research interests includes complexity modelling of tailwinds, headwinds and crosswinds.
+### 你好呀 👋
 
-He leads the clean energy group which develops 3D air pollution-climate models, writes differential equation solvers, and manufactures titanium plated air ballons. In his free time he bakes raspberry pi.
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque elit, tristique placerat feugiat ac, facilisis vitae arcu. Proin eget egestas augue. Praesent ut sem nec arcu pellentesque aliquet. Duis dapibus diam vel metus tempus vulputate.
+你好，我是 Jacob，在 2020 这个特殊的年份毕业于上海大学，目前在北京贝壳找房从事前端工作。内心对前端新兴技术充满好奇，渴望实践。

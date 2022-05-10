@@ -1,0 +1,175 @@
+---
+title: '一文详解 react-color 实现原理'
+date: '2021-01-10'
+tags: ['react', 'react-color']
+draft: false
+summary: 'ReactColor 是一个优秀的 React 颜色选择器组件，官方给了多种布局供开发者选择，那么它内部是怎么实现的呢？'
+---
+
+## 一、前言
+
+[`ReactColor`](https://github.com/casesandberg/react-color) 是一个优秀的 React 颜色选择器组件，官方给了多种布局供开发者选择。
+
+![react-color 官网演示](/static/images/how-react-color-work/react-color.png)
+
+笔者常用的主题为 Sketch，这种主题涵盖了**颜色面板**、**推荐色块**、**RGB 颜色**输入等功能，比较完善。但是最近在写一个富文本编辑器，编写过程中遇到了一些问题，比如用户在点击推荐色块时，编辑器会失去焦点，无法对字体颜色进行更改。如果是编辑器自有的组件，可以使用以下代码
+
+```javascript
+event.preventDefault()
+```
+
+该代码可以禁止浏览器默认行为，比如点击推荐色块之后只将色值向上传递，而不改变浏览器当前 `focus` 状态。但是 `ReactColor` 并没有暴露该事件，故 clone 了源码，在编辑器内集成了该组件，实现功能的同时也能够减少打包体积。
+
+## 二、实现原理
+
+本章节主要介绍 `ReactColor` 的实现原理，以比较有代表性的 Sketch 主题为例。
+
+![结构分析](/static/images/how-react-color-work/principle.png)
+
+由上图可以看到，整个颜色选择器面板由这六个部分组成，分别是**亮度与饱和度调节面板**、**色相 Hue 调节面板**、**透明度调节面板**、**当前颜色的 RGBA 与 Hex 值**、**推荐色块以及颜色实时预览**。下面的部分就来介绍其原理实现。
+
+### 2.1 HSV 色彩模型
+
+与颜色相关的几个属性分别为亮度、饱和度、色相与透明度，与我们平时用到的 RGB 色彩模型不同，`ReactColor` 中用的是 HSV 色彩模型，其具体含义如下：
+
+![hsv模型](/static/images/how-react-color-work/hsv.png)
+
+下面是维基百科对 HSV 色彩模型的介绍：
+
+> HSV 即[色相](https://zh.wikipedia.org/wiki/%E8%89%B2%E7%9B%B8)、[饱和度](<https://zh.wikipedia.org/wiki/%E8%89%B2%E5%BA%A6_(%E8%89%B2%E5%BD%A9%E5%AD%A6)>)、[明度](https://zh.wikipedia.org/wiki/%E6%98%8E%E5%BA%A6)（英语：Hue, Saturation, Value），又称 HSB，其中 B 即英语：Brightness。
+>
+> - [色相](https://zh.wikipedia.org/wiki/%E8%89%B2%E7%9B%B8)（H）是色彩的基本属性，就是平常所说的[颜色](https://zh.wikipedia.org/wiki/%E9%A2%9C%E8%89%B2)名称，如[红色](https://zh.wikipedia.org/wiki/%E7%BA%A2%E8%89%B2)、[黄色](https://zh.wikipedia.org/wiki/%E9%BB%84%E8%89%B2)等。
+> - [饱和度](<https://zh.wikipedia.org/wiki/%E8%89%B2%E5%BA%A6_(%E8%89%B2%E5%BD%A9%E5%AD%A6)>)（S）是指色彩的纯度，越高色彩越纯，低则逐渐变灰，取 0-100%的数值。
+> - [明度](https://zh.wikipedia.org/wiki/%E6%98%8E%E5%BA%A6)（V），亮度（L），取 0-100%。
+
+至于为什么选用 HSV 色彩模型而不是直接使用 RGB，大家在使用 ReactColor 的过程中应该会发现，只要在下方的 色相 Hue 调节面板上选中了颜色，亮度与饱和度调节面板就会呈现什么颜色。举个例子：你选择了黄色，那么最上方调节面板呈现的就是黄色，差别也只是饱和度与明度不同而已。这就是使用 HSV 色彩模型的优势，让用户选择的颜色变成可预知并且方便调节的。
+RGB 颜色空间利用三个颜色分量的线性组合来表示颜色，任何颜色都与这三个分量有关，而且这三个分量是高度相关的，所以连续变换颜色时并不直观，想对图像的颜色进行调整需要更改这三个分量才行。自然环境下获取的图像容易受自然光照、遮挡和阴影等情况的影响，即对亮度比较敏感。而 RGB 颜色空间的三个分量都与亮度密切相关，**即只要亮度改变，三个分量都会随之相应地改变**，而没有一种更直观的方式来表达，而这就是 HSV 色彩模型的优势所在。
+
+### 2.2 HSV 转 RGB
+
+上面提到，在日常的前端开发过程中还是普遍使用 RGB 色彩模型进行颜色表示，在用户设置好 HSV 值后我们需要将其转为 RGB 值，公式如下（该公式来自[维基百科](https://zh.wikipedia.org/wiki/HSL%E5%92%8CHSV%E8%89%B2%E5%BD%A9%E7%A9%BA%E9%97%B4#%E4%BB%8EHSV%E5%88%B0RGB%E7%9A%84%E8%BD%AC%E6%8D%A2))
+
+$$
+h_i = \lfloor h/60 \rfloor
+$$
+
+$$
+f = h/60 - h_i
+$$
+
+$$
+p = v * (1-s)
+$$
+
+$$
+q = v*(1-f*s)
+$$
+
+$$
+t = v * (1 - (1-f)*s)
+$$
+
+$$
+rgb=\begin{cases}
+(v,t,p),  & \text{if $h_i=0$} \\
+(q,v,p), & \text{if $h_i=1$} \\
+(p,v,t), & \text{if $h_i=2$} \\
+(p,q,v), & \text{if $h_i=3$} \\
+(t,p,v), & \text{if $h_i=4$} \\
+(v,p,q), & \text{if $h_i=5$} \\
+\end{cases}
+$$
+
+这样在用户选择完成后就可以对色彩空间实时转换，通过 `onChange` 回调返回给用户。
+
+### 2.3 HSV 色彩模型在 ReactColor 中的实现
+
+既然使用了 HSV 色彩模型就要考虑一下如何表示这三个变量，下面我们分两部分来讲。
+
+#### 2.3.1 Hue 色相
+
+| 颜色名称 |  红绿蓝含量  | 角度 |                                                      代表物体                                                      |
+| :------: | :----------: | :--: | :----------------------------------------------------------------------------------------------------------------: |
+|   红色   |  R255,G0,B0  |  0°  | [血液](https://zh.wikipedia.org/wiki/%E8%A1%80%E6%B6%B2)、[草莓](https://zh.wikipedia.org/wiki/%E8%8D%89%E8%8E%93) |
+|   橙色   | R255,G128,B0 | 30°  |      [火](https://zh.wikipedia.org/wiki/%E7%81%AB)、[橙子](https://zh.wikipedia.org/wiki/%E6%A9%99%E5%AD%90)       |
+|   黄色   | R255,G255,B0 | 60°  | [香蕉](https://zh.wikipedia.org/wiki/%E9%A6%99%E8%95%89)、[杧果](https://zh.wikipedia.org/wiki/%E6%9D%A7%E6%9E%9C) |
+|   黄绿   | R128,G255,B0 | 90°  |                              [柠檬](https://zh.wikipedia.org/wiki/%E6%AA%B8%E6%AA%AC)                              |
+|   绿色   |  R0,G255,B0  | 120° |      [草](https://zh.wikipedia.org/wiki/%E8%8D%89)、[树叶](https://zh.wikipedia.org/wiki/%E6%A8%B9%E8%91%89)       |
+|   青绿   | R0,G255,B128 | 150° |                              [军装](https://zh.wikipedia.org/wiki/%E5%86%9B%E8%A3%85)                              |
+|   青色   | R0,G255,B255 | 180° | [水面](https://zh.wikipedia.org/wiki/%E6%B0%B4%E9%9D%A2)、[天空](https://zh.wikipedia.org/wiki/%E5%A4%A9%E7%A9%BA) |
+|   靛蓝   | R0,G128,B255 | 210° | [水面](https://zh.wikipedia.org/wiki/%E6%B0%B4%E9%9D%A2)、[天空](https://zh.wikipedia.org/wiki/%E5%A4%A9%E7%A9%BA) |
+|   蓝色   |  R0,G0,B255  | 240° |      [海](https://zh.wikipedia.org/wiki/%E6%B5%B7)、[墨水](https://zh.wikipedia.org/wiki/%E5%A2%A8%E6%B0%B4)       |
+|   紫色   | R128,G0,B255 | 270° | [葡萄](https://zh.wikipedia.org/wiki/%E8%91%A1%E8%90%84)、[茄子](https://zh.wikipedia.org/wiki/%E8%8C%84%E5%AD%90) |
+|   品红   | R255,G0,B255 | 300° |      [火](https://zh.wikipedia.org/wiki/%E7%81%AB)、[桃子](https://zh.wikipedia.org/wiki/%E6%A1%83%E5%AD%90)       |
+|   紫红   | R255,G0,B128 | 330° |                              [墨水](https://zh.wikipedia.org/wiki/%E5%A2%A8%E6%B0%B4)                              |
+
+如何横向表示色相呢，只需要一行 CSS 代码：
+
+```css
+background: linear-gradient(
+  to right,
+  #f00 0%,
+  #ff0 17%,
+  #0f0 33%,
+  #0ff 50%,
+  #00f 67%,
+  #f0f 83%,
+  #f00 100%
+);
+```
+
+这样即可大致表达出 0-360 度的色相值，效果如下：![image.png](/static/images/how-react-color-work/hue.png)根据鼠标拖动的位置距离左边界的距离就可以计算出色相值。
+
+```javascript
+/**
+ * 在颜色值发生变化时实时计算相应的色相值
+ * @param event
+ */
+const handleChange = (event: any) => {
+  if (!ref.current) {
+    return
+  }
+  const clientRect = ref.current.getBoundingClientRect()
+  const { width: containerWidth } = clientRect
+  const x: number = typeof event.pageX === 'number' ? event.pageX : event.touches[0].pageX
+  const left = x - (clientRect.left + window.pageXOffset)
+
+  let innerHue
+  // 处理边界值
+  if (left < 0) {
+    innerHue = 0
+  } else if (left > containerWidth) {
+    innerHue = 359
+  } else {
+    const percent = (left * 100) / containerWidth
+    innerHue = (360 * percent) / 100
+  }
+  setHue(innerHue)
+  props.onChange({ h: innerHue })
+}
+```
+
+#### 2.3.2 Saturation 饱和度与 Value 明度
+
+**饱和度（S）**是指色彩的纯度，越高色彩越纯，低则逐渐变灰，取 0-100%的数值。**明度（V）**指[颜色](https://zh.wikipedia.org/wiki/%E9%A2%9C%E8%89%B2)的亮度，不同的颜色具有不同的明度。
+
+在 ReactColor 中按照如下方式来表示饱和度与明度。![image.png](/static/images/how-react-color-work/saturation.png)其实用 CSS 表示也比较简单，使用渐变色来表示就可以实现该效果。
+
+```css
+background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
+background: linear-gradient(to top, #000, rgba(0, 0, 0, 0));
+```
+
+与色相的计算方式一样，也是根据鼠标拖动的位置距离左边界和下边界的距离来计算，计算方法可以参考[色相的思路](#SDLwT)。
+
+## 三、总结
+
+大家看完这篇文章应该发现代码部分其实我介绍的不多，更多还是介绍 HSV 色彩模型，以及作者为什么没有使用 RGB 表示。
+如果大家去看 react-color 源码就会发现代码其实不难理解，难点还是在 HSV 的应用方法上面，大家如果有需要自己在项目里面定制化颜色选择器的话也可以根据这个思路来，一天之内就可以写出来。
+
+## 四、参考资料
+
+- [HSL 和 HSV 色彩空间](https://zh.wikipedia.org/wiki/HSL%E5%92%8CHSV%E8%89%B2%E5%BD%A9%E7%A9%BA%E9%97%B4)
+- [色相](https://zh.wikipedia.org/wiki/%E8%89%B2%E7%9B%B8)
+- [明度](https://zh.wikipedia.org/wiki/%E6%98%8E%E5%BA%A6)
+- [饱和度](<https://zh.wikipedia.org/wiki/%E8%89%B2%E5%BA%A6_(%E8%89%B2%E5%BD%A9%E5%AD%A6)>)
