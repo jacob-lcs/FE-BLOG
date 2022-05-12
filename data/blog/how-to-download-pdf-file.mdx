@@ -1,0 +1,84 @@
+---
+title: '如何使 pdf 文件在浏览器里面直接下载而不是打开'
+date: '2020-08-10'
+tags: ['JavaScript']
+draft: false
+summary: '比较简单的浏览器文件下载方式是通过 window.open 实现，但是打开 pdf 文件的时候浏览器自动执行了预览操作，我们如何才能实现直接下载而不是预览呢？'
+---
+
+## 前言
+
+在做需求过程中我们大概率会遇到在浏览器中下载文件的需求，如果仅仅是这个要求的话很简单，有如下两种解决方式。
+
+第一种是通过 window 对象的 open 方法进行操作，将文件 url 直接在浏览器中打开即可下载。
+
+```javascript
+window.open('url')
+```
+
+第二种是通过 a 标签，设置 href 为 url 值，点击 a 标签即可完成下载。
+
+```html
+<a href="url" download="文件名"></a>
+```
+
+但是上面两种文件下载方式都会存在一个问题，就是 pdf 文件会直接在浏览器中打开而不是直接下载，效果如下：
+
+![](/static/images/how-to-download-pdf-file/before.gif)
+
+## 解决方案
+
+这种需求的解决方式就是将 PDF 文件的 MIME type 改为 `application/octet-stream` 并加入 `Content-Disposition:attachment` header，原本的 pdf 文件 MIME type 为 `application/pdf`，浏览器识别到这个 type 之后会自动在浏览器打开，所以说我们在这里修改 type 即可。
+
+修改的方法有两种，一种是在后端进行修改，上传文件或者返回文件的时候进行操作，但是绝大多数情况下文件都是存储到 cdn 服务器中的，后端也不方便对其进行操作，这个时候就需要前端来修改了。
+
+处理代码如下：
+
+```javascript
+/**
+ * @deprecated 下载文件
+ * @param {string} url
+ * @param {string} filename
+ */
+handleFileDownload = (url, filename) => {
+  // 创建 a 标签
+  let a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+}
+
+/**
+ * @deprecated 处理 pdf url，使其不在浏览器打开
+ * @param {string} url
+ */
+handlePdfLink = (url, filename) => {
+  fetch(url, {
+    method: 'get',
+    responseType: 'arraybuffer',
+  })
+    .then(function (res) {
+      if (res.status !== 200) {
+        return res.json()
+      }
+      return res.arrayBuffer()
+    })
+    .then((blobRes) => {
+      // 生成 Blob 对象，设置 type 等信息
+      const e = new Blob([blobRes], {
+        type: 'application/octet-stream',
+        'Content-Disposition': 'attachment',
+      })
+      // 将 Blob 对象转为 url
+      const link = window.URL.createObjectURL(e)
+      handleFileDownload(link, filename)
+    })
+    .catch((err) => {
+      console.error(err)
+    })
+}
+```
+
+这样修改修改代码的话就可以实现在浏览器中下载。效果如下
+
+![](/static/images/how-to-download-pdf-file/after.gif)
