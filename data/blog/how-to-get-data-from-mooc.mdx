@@ -1,0 +1,128 @@
+---
+title: '教你爬取腾讯课堂、网易云课堂、mooc等所有课程信息'
+date: '2020-04-17'
+tags: ['Python']
+draft: false
+summary: '由于自己想要实现一个课程推荐系统，需要在各大视频网站上爬取所有视频课程，从而为后续的推荐工作提供大量数据，在此篇博客中我分别爬取了MOOC、网易云课堂、腾讯课堂、学堂在线共约15万条数据。'
+---
+
+**_本文的所有代码都在 GitHub 上托管，想要代码的同学请点击 [这里](https://github.com/lcs1998/crawlCourse)_**
+
+**序**：由于自己想要实现一个课程推荐系统，需要在各大视频网站上爬取所有视频课程，从而为后续的推荐工作提供大量数据，在此篇博客中我分别爬取了 MOOC、网易云课堂、腾讯课堂、学堂在线共约 15 万条数据。
+
+**运行环境**：
+
+1. `mysqlclient`~=1.4.6
+
+2. `requests`~=2.22.0
+
+3. `bs4`~=0.0.1
+
+4. `beautifulsoup4`~=4.8.2
+
+## MOOC
+
+首先进入[网站](https://www.icourse163.org/category/all)，在这里我们分析他的 API 设计，先要找到他是从哪一个 API 获得相应课程的，经过分析之后我们发现是`https://www.icourse163.org/web/j/courseBean.getCoursePanelListByFrontCategory.rpc`这个 API，其返回内容如下：
+
+![](/static/images/how-to-get-data-from-mooc/data_struct.png)
+
+然后我们随意点击页面上的一个课程，找到其课程 url 的规律，打开**沟通心理学**这门课程，其 URL 是`https://www.icourse163.org/course/HIT-1001515007`，而沟通心理学这门课程返回的信息是：
+
+```json
+// 在这里我只保留了我需要的一些数据
+{
+  "name": "沟通心理学",
+  "id": 1001515007,
+  "schoolPanel": { "id": 9005, "name": "哈尔滨工业大学", "shortName": "HIT" }
+}
+```
+
+我们可以发现课程的 URL 就是学校的简称-id，这样就可以组成课程 URL，现在我们得知课程 URL 如何得知，那么这些课程数据需要传什么参数呢，如下：
+
+```json
+{
+  "categoryId": -1, // 类别id，因为我这里选的全部，所以是-1
+  "type": 30,
+  "orderBy": 0,
+  "pageIndex": 1, // 第几页
+  "pageSize": 20 // 每页多少条数据
+}
+```
+
+到这里就新产生了一个问题，`categoryId`是怎么来的，我们继续看网页请求的 api 列表，找到这样一个 API`https://www.icourse163.org/web/j/mocCourseCategoryBean.getCategByType.rpc`，其返回结果如下：
+
+![](/static/images/how-to-get-data-from-mooc/data2.png)
+
+数据结构大致如下：
+
+![](/static/images/how-to-get-data-from-mooc/xmind.png)
+
+我们想要得到的课程分类特别细致的话就需要一直向下找 json 的 children，直到 children 为空，算法的话就采用递归算法就可以。
+
+到现在为止我们已经知道了如何获取类别 id，如果由类别 id 获得课程数据，接下来我们就需要把获取到的数据存储到数据库中，我的数据库包含**类别、课程名称、课程图片 URL、课程 URL、课程来源**这四个字段，存储代码如下：
+
+```python
+# 存储到数据库
+def save_to_mysql(data, category_name):
+    sql = "insert into webCourses (category, name, site, imgUrl, resource) values ('{0}', '{1}', '{2}', '{3}', '{4}')".format(
+        category_name, data["name"],
+        'https://www.icourse163.org/course/' + str(data["schoolPanel"]["shortName"]) + "-" + str(data["id"]),
+        data["imgUrl"], "慕课")
+    print(sql)
+    execute(sql)
+```
+
+要注意这里的`execute`函数是我封装的一个函数，具体的作用就是运行 sql 语句，全部代码请到我的 GitHub 查看。
+
+## 腾讯课堂
+
+其实如果你看过了上面 MOOC 的获取所有课程的 API 设计，其他课程网站的 API 设计也是大致相同的，首先我们要获得类别 id，然后再根据类别 id 去请求数据，与 mooc 不同的是腾讯课堂请求课程数据是通过`beautifulsoup4`解析`html`内容实现的。下面就来简单说一下：
+
+获取课程类别的 API：`https://ke.qq.com/cgi-bin/get_cat_info`
+
+根据类别 id 获得数据的网页 url： `https://ke.qq.com/course/list?mt=1001&st=2001&tt=3001&page=2`，这里的 mt、st、tt 分别是三个类别，st 是 mt 的一个子类，tt 是 st 的一个子类，page 就是页数了。
+
+得到的网站如下：
+
+![](/static/images/how-to-get-data-from-mooc/website.png)
+
+在这里我们需要的是每一个课程，其实思路很简单，按`F12`打开开发者工具，找到课程对应的 dom 块，用`beautifulsoup4`解析`html`内容，得到课程数组就可以了，代码如下：
+
+```python
+# 获取课程数据
+def get_course_data(mt, st, tt, page, category):
+    url = "https://ke.qq.com/course/list?mt=" + str(mt) + "&st=" + str(st) + "&tt=" + str(tt) + "&page=" + str(page)
+    response = requests.request("GET", url).text
+    bs = BeautifulSoup(response)
+    course_blocks = bs.find_all(name='li', attrs={"class": "course-card-item--v3 js-course-card-item"})
+    # print(course_blocks)
+    if len(course_blocks) != 0:
+        for i in range(len(course_blocks)):
+            bs = course_blocks[i]
+            img = bs.find(name="img", attrs={"class", "item-img"})
+            a = bs.find(name="a", attrs={"class", "item-img-link"})
+            save_to_mysql(img.attrs["alt"], a.attrs["href"], img.attrs["src"], category)
+        return True  # 这里是返回该类别的下一页是否还有数据
+    else:
+        return False
+```
+
+得到数据之后再将这些数据存入到数据库中就可以了。
+
+## 网易云课堂
+
+其实网易云课堂就和 MOOC 的 API 设计非常类似了，毕竟都是网易公司的程序员写的，规范也都差不多，看懂 MOOC 的 api 设计的同学直接去我的 github 看代码就可以了。
+
+## 学堂在线
+
+学堂在线的 API 设计就比较简单，直接通过一个 API 就可以获得所有的数据，`https://next.xuetangx.com/api/v1/lms/get_product_list/?page=1`，返回的数据格式如下：
+
+![](/static/images/how-to-get-data-from-mooc/data3.png)
+
+在这里一个 API 里面课程名称、分类、课程封面 URL，课程 id 可以看的非常请求，下面我们就需要得到课程信息与课程 url 之间的关系，我们随意点开一个课程，分析他的 URL，我们就可以发现，课程 URL 就是`https://next.xuetangx.com/course/`加上课程的`course_sign`组成的。
+
+到这里就分析结束，存储到数据库即可。
+
+## 小结
+
+从上述的分析我们可以看出，各大课程网站的 api 设计都是类似的，并且他们都没有做 api 请求限制，所以我在爬取过程中没有遇到过被封 IP 的情况，也算是省了不少事。在这里把代码与思路分享给大家，希望能够给到大家一些帮助。所有代码请点击[这里](https://github.com/jacob-lcs/crawlCourse)
