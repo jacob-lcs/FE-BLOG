@@ -1,0 +1,270 @@
+---
+title: 'CSS 实现水平垂直居中的数种方法整合'
+date: '2019-12-02'
+tags: ['CSS']
+draft: false
+summary: 'CSS实现水平垂直居中可以说是前端老生常谈的问题了，一般面试官问的时候面试者都会回答出来，但是继续追问还有没有其他方法的时候有可能就说不出来了。本着学习知识的目的，特在此纪录CSS实现水平垂直居中的多种方法。'
+---
+
+## 准备工作
+
+我们先写一个简单的 HTML 文件，方便我们接下来进行效果实现
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="./index.css" />
+    <title>水平垂直居中</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="inner">水平垂直居中</div>
+    </div>
+  </body>
+</html>
+```
+
+```CSS
+/* CSS文件 */
+.container{
+  width: 400px;
+  height: 400px;
+  border: 1px solid black;
+}
+
+.inner{
+  width: 100px;
+  height: 100px;
+  border: 1px solid red;
+}
+```
+
+最终浏览器呈现的效果如下
+
+![image](/static/images/how-to-make-element-center-by-css/image1.png)
+
+## 水平居中
+
+水平居中的方式有多种，总体来说可以使用`flex`、`grid`、`text-align`、`margin`等方法，我们要实现如下所示的效果
+
+![image](/static/images/how-to-make-element-center-by-css/image2.png)
+
+### 使用 flex 方法
+
+```css
+.container {
+  width: 400px;
+  height: 400px;
+  border: 1px solid black;
+  /* 新增 */
+  display: flex;
+  justify-content: center;
+}
+```
+
+只需在父 DOM 元素中新增以上 CSS 即可实现水平居中
+
+### 使用 margin 方法
+
+```CSS
+.inner{
+  width: 100px;
+  height: 100px;
+  border: 1px solid red;
+  /* 新增 */
+  margin: 0 auto;
+}
+```
+
+**注：**这个方法适用于知道子 dom 元素宽度已知的情况下
+
+### 使用 text-align 方法
+
+<span style={{ color: 'red' }}>要注意：</span>`text-align`
+CSS属性定义行内内容（例如文字）如何相对它的块父元素对齐，并不控制块元素自己的对齐，只控制他行内内容的对齐。
+
+所以这个属性对于我的 HTML 文件是**无效**的，我们要把内部的 div 改为`span`即可生效，修改后的代码如下：
+
+```HTML
+<body>
+  <div class="container">
+    <!-- 将div修改为span -->
+    <span class="inner">水平垂直居中</span>
+  </div>
+</body>
+```
+
+CSS 样式表修改为如下所示
+
+```CSS
+.container{
+  width: 400px;
+  height: 400px;
+  border: 1px solid black;
+  /* 新增 */
+  text-align: center;
+}
+```
+
+### 使用 grid 方法
+
+```CSS
+.container{
+  width: 400px;
+  height: 400px;
+  border: 1px solid black;
+  /* 新增 */
+  display: grid;
+  grid-template-rows: 1fr; /* 让inner的高度占满 */
+  grid-template-columns: 1fr; /* 让inner的宽度占满 */
+  justify-items: center; /* 让inner水平居中 */
+}
+```
+
+关于`grid`的更多介绍详见张鑫旭的:point_right:[博客](https://www.zhangxinxu.com/wordpress/2018/11/display-grid-css-css3/):point_left:
+
+### 使用 left 方法
+
+```CSS
+.container{
+  width: 400px;
+  height: 400px;
+  border: 1px solid black;
+  /* 新增 */
+  position: relative;
+}
+
+.inner{
+  width: 100px;
+  height: 100px;
+  border: 1px solid red;
+  /* 新增 */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+```
+
+这个地方要注意的是，如果想要使用`left`、`right`、`top`、`bottom`方法的时候必须保证父 dom 的`position`为`relative`属性，子`dom`的`position`为`absolute`属性，这样才可以生效。并且子`dom`的基准是离其最近的`position`属性为`relative`的父`dom`元素
+
+当然，这里你如果很明确子 dom 元素和父 dom 元素的宽度的话，比如我写的 HTML 代码，可以直接使用`left: 150px`来实现，但是这样的话就没有什么拓展性了。
+
+## 垂直居中
+
+垂直居中的方法也有很多，比如`flex`、`top`、`grid`等，我们要实现的效果如下
+
+![image](/static/images/how-to-make-element-center-by-css/image3.png)
+
+### 使用 flex 方法
+
+```CSS
+.container{
+  width: 400px;
+  height: 400px;
+  border: 1px solid black;
+  /* 新增 */
+  display: flex;
+  align-items: center;
+}
+```
+
+只需在父 DOM 元素中新增以上 CSS 即可实现垂直居中、
+
+### 使用 grid 方法
+
+```CSS
+.container{
+  width: 400px;
+  height: 400px;
+  border: 1px solid black;
+  /* 新增 */
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+```
+
+### 使用 top 方法
+
+```CSS
+.container{
+  width: 400px;
+  height: 400px;
+  border: 1px solid black;
+  /* 新增 */
+  position: relative;
+}
+
+.inner{
+  width: 100px;
+  height: 100px;
+  border: 1px solid red;
+  /* 新增 */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+```
+
+### 使用 line-height 方法
+
+使用`line-height`方法是不能使我这个 HTML 垂直居中的，但是如果你想垂直居中的元素是一个单行文本，那么可以参照这个方法。
+
+```HTML
+<body>
+  <div class="container">
+    <!-- 将div修改为span -->
+    <span class="inner">水平垂直居中</span>
+  </div>
+</body>
+```
+
+```CSS
+.container{
+  width: 400px;
+  height: 400px;
+  border: 1px solid black;
+}
+
+.inner{
+  width: 100px;
+  line-height: 400px;
+  border: 1px solid red;
+}
+```
+
+<span style={{ color: 'red' }}>
+  请注意一定是单行文本，因为line-height是指一行文本的高度，如果是两行文本的话就不能实现垂直居中的效果了
+</span>
+
+### 使用 inline-block 方法
+
+```css
+.container {
+  width: 400px;
+  height: 400px;
+  border: 1px solid black;
+}
+/* 新增 */
+.container::after {
+  display: inline-block;
+  vertical-align: middle;
+  content: '';
+  height: 100%;
+}
+.inner {
+  width: 100px;
+  height: 100px;
+  border: 1px solid red;
+  /* 新增 */
+  display: inline-block;
+  vertical-align: middle;
+}
+```
+
+以上就是我对于垂直居中方法的一些整合，如果您有什么其他的方法，请在评论区进行讨论！
