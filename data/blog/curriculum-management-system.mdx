@@ -1,0 +1,112 @@
+---
+title: '做了一个比较完善的课程管理与推荐系统'
+date: '2020-08-01'
+tags: ['React', 'JavaScript', '推荐系统']
+draft: false
+summary: '自己在大学的时候做了一个课程管理与推荐系统，系统的功能包括课程表、课程推荐、课程群聊三大功能。其实自己也是在大学时候感受到没有一款相似的工具出现，并且平时想找大学课程班上的同学比较困难，因为大学是走班制，没有固定的班级。所以就做了这么一款软件。总体来说分为 Android 端、Web 端、Nodejs 端。'
+---
+
+- Web 端：https://github.com/jacob-lcs/awesome-curriculum-web
+- Android 端：https://github.com/jacob-lcs/awesome-curriculum-android
+- Nodejs 端：https://github.com/jacob-lcs/awesome-curriculum-backend
+- 预览网址：http://schedule.lcs.show/
+
+## 一、引言
+
+自己在大学的时候做了一个课程管理与推荐系统，系统的功能包括课程表、课程推荐、课程群聊三大功能。其实自己也是在大学时候感受到没有一款相似的工具出现，并且平时想找大学课程班上的同学比较困难，因为大学是走班制，没有固定的班级。所以就做了这么一款软件。总体来说分为 Android 端、Web 端、Nodejs 端。
+
+## 二、功能介绍
+
+本章主要来介绍一下本系统做的一些功能，并且通过 gif 图片的形式对其作出演示。
+
+### 2.1 课程表
+
+课程表就是可以通过自动导入或者手动新建的方式进行添加，但是由于浏览器跨域限制，Web 端并没有做自动导入功能，而是将其放到了 Android 端，GitHub 地址如上所示。自动导入故名思义，输入你的学号和密码，就可以通过学校教务处拉取你的课程信息，当然这个需要适配，目前只适配了上海大学（对，我就是上海大学的 😝）。
+手动新增课程的方式也比较人性化，通过在课程表中下拉就可以弹出课程详情的 form 表单，输入相关的信息即可。下面通过 gif 图片来演示一下。
+
+![](/static/images/curriculum-management-system/display.gif)
+
+### 2.2 课程群聊
+
+课程群聊就是在你新建完课程之后，系统会自动根据你新建的课程将你拉入到对应的课程群聊当中，省去了寻找群聊的过程，打开聊天界面即可看到所有课程群聊，要注意的是当学校、课程名称、课程好均相同时才会进入到同一个课程群聊当中。
+在群聊中可以发送图片、表情、文字等信息，演示如下：
+
+![](/static/images/curriculum-management-system/chat.gif)
+
+### 课程推荐
+
+系统中还有一个课程推荐的功能，就是根据你平时的点击日志进行课程推荐，推荐算法使用的是比较经典的基于物品的协同过滤推荐算法。数据库的所有课程都是从网易云课堂、腾讯课堂、MOOC 等网站爬取的，具体的方法可以看我[这篇博客](https://www.cnblogs.com/Jacob98/p/12718425.html)，演示如下：
+
+![](/static/images/curriculum-management-system/recommend.gif)
+
+### Android 端总览
+
+![](/static/images/curriculum-management-system/Android.gif)
+
+## 三、部署方法
+
+### 3.1 Web 端
+
+安装依赖
+
+```bash
+yarn install
+```
+
+运行项目
+
+```bash
+yarn start
+```
+
+### 3.2 Nodejs 端
+
+你应该可以发现项目目录`/config/`下的三个文件里面的配置项都为空，因为我使用的云服务器作为 MySQL 数据存储，包括 qq 邮箱密钥，为了保护隐私，还请大家自己填写调试程序。
+
+#### 3.2.1 配置变量
+
+```js
+// PASS_SECERT.js
+const PASS_SECRET = {
+  SECRET_KEY: '', // 加密密码的密钥，自己随便填写就好
+}
+```
+
+```js
+// dbConfig.js
+const dbConfig = {
+  DATABASE: '', //数据库
+  USERNAME: '', //用户
+  PASSWORD: '', //密码
+  PORT: '', //端口
+  HOST: '', //服务ip地址
+}
+```
+
+```js
+// email.js
+const emailInfo = {
+  user: '',
+  pass: '', // QQ邮箱密钥，注意：不是密码
+}
+```
+
+另外，config 目录下还有两个 pem 文件，这个是生成的密钥和公钥，请按照以下方法生成
+
+1. 打开命令行工具，输入 openssl，打开 openssl;
+2. 生成私钥
+   `genrsa -out rsa_private_key.pem 2048`
+3. 生成公钥
+   `rsa -in rsa_private_key.pem -pubout -out rsa_public_key.pem`
+
+#### 3.2.2 安装依赖
+
+```bash
+npm run install
+```
+
+#### 3.2.3 运行项目
+
+```bash
+npm run start
+```
