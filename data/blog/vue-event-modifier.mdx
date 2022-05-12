@@ -1,0 +1,146 @@
+---
+title: 'Vue 事件修饰符'
+date: '2020-10-31'
+tags: ['Vue', 'JavaScript']
+draft: false
+summary: 'Vue 除了提供一些常规则事件处理之外还提供了一些像 self、stop 之类的修饰符，这些修饰符都有什么作用呢？'
+---
+
+> 整体学习 Vue 时看到 Vue 文档中有事件修饰符的描述，但是看了之后并没有理解是什么意思，于是查阅了资料，现在记录下来与大家分享
+
+先给大家画一个示意图理解一下冒泡和捕获
+
+![image](/static/images/vue-event-modifier/capture.png)
+
+### (1) `.stop`修饰符
+
+请看如下代码
+
+```Vue
+<template>
+  <div class="about">
+    <div @click="test1">
+      <div @click="test2">
+        测试
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  methods:{
+    test1(){
+      console.log('test1')
+    },
+    test2(){
+      console.log('test2')
+    }
+  }
+}
+</script>
+```
+
+由以上代码可以看到我们有一个嵌套的 div，每一个 div 都绑定着一个事件，如果我们点击 div 的话是按什么顺序触发这两个事件的呢。其实是默认按照冒泡的方式触发的，简单来说就是由内而外，如果还是不明白请看上面的解析图。
+
+此 Vue 文件最终生成的界面是这个样子的
+
+![image](/static/images/vue-event-modifier/before.png)
+
+当我们点击的时候默认按照冒泡方式触发函数，控制台打印结果如下
+
+![image](/static/images/vue-event-modifier/before_console.png)
+
+**现在就是`.stop`发挥作用的时候了**，修改代码如下
+
+```Vue
+<template>
+  <div class="about">
+    <div @click="test1">
+      <div @click.stop="test2">
+        测试
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+这样我们在点击之后控制台打印结果如下
+
+![image](/static/images/vue-event-modifier/after_console.png)
+
+由这个结果我们可以看到，这个修饰符的作用就是阻止事件冒泡，不让他向外去执行函数，到此为止
+
+### (2)`.prevent`修饰符
+
+这个时候我们再来说一下.prevent 修饰符，其作用就是阻止组件本来应该发生的事件，转而去执行自己定义的事件
+
+```Vue
+<template>
+  <div class="about">
+    <a href="https://www.cnblogs.com/Jacob98/" @click="test2">跳转</a>
+  </div>
+</template>
+
+<script>
+export default {
+  methods:{
+    test2(){
+      console.log('test2')
+    }
+  }
+}
+</script>
+```
+
+上述代码我们并没有添加.prevent 修饰符，接下来的结果我们应该可以想到，点击之后会跳转到我写的网址中(也就是我的博客:sunglasses:)，当时当我们对这个代码稍作修改
+
+```Vue
+<template>
+  <div class="about">
+    <a href="https://www.cnblogs.com/Jacob98/" @click.prevent="test2">跳转</a>
+  </div>
+</template>
+```
+
+点击之后就不会跳转到相应的网址，而是去执行我写的函数
+
+### (3)`.capture`修饰符
+
+其实这个的理解就很简单，就想我们第一节所说，网页是默认按照冒泡方式去触发函数的，但是当我们使用.capture 修饰符时，网页就会按照捕获的方式触发函数，也就是从外向内执行，**但是这个时候一定要注意，.capture 修饰符一定要写在外层才能生效**，原因大家应该能自己想清楚。
+
+```Vue
+<template>
+  <div class="about">
+    <div @click.capture="test1">
+      <div @click.stop="test2">
+        测试
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+控制台打印结果如下
+
+![image](/static/images/vue-event-modifier/after_console_2.png)
+
+### (4)`.once`修饰符
+
+这个理解起来就更加简单了，加上此修饰符之后相应的函数只能触发一次，无论你点击多少下，函数就只触发一次。这个有一个用途就是防止用户多次点击造成应用数据错误。比如说用户点击支付按钮，由于客户机器比较卡顿，点击一下之后没有立即反应就又点了一下，这个时候有可能就会造成多次扣费，降低用户体验。
+
+### (5)`.self`修饰符
+
+当前元素自身时触发处理函数时才会触发函数，原理：是根据 event.target 确定是否当前元素本身，来决定是否触发的事件/函数
+实例：如果点击内部点击 2，冒泡不会执行 gett 方法，因为 event.target 指的是内部点击 2 的 dom 元素，不是外部点击 1 的，所以不会触发自己的点击事件
+
+```Vue
+<div v-on:click.self="test1">
+    test1
+	<div v-on:click="test2">
+    	test2
+    </div>
+</div>
+```
+
+![image](/static/images/vue-event-modifier/after_console_3.png)
