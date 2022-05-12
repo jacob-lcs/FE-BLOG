@@ -1,0 +1,140 @@
+---
+title: '三种方法教你HTML实现点击某一个元素之外触发事件 '
+date: '2019-11-25'
+tags: ['JavaScript']
+draft: false
+summary: '当前有两个嵌套的 DIV 元素，如果能够处理两个元素之间的点击事件呢？'
+---
+
+![示意图](/static/images/how-to-handle-click-event-outside-element/example.png)
+
+大致编写的 HTML 界面渲染后是这个样子的，我们现在想要实现的需求是点击`Button`所在的 div 不会触发事件，而在点击`Button`所在的 div 之外的区域时会触发事件，下面就来介绍三种方法实现。
+
+```html
+<!-- HTML代码 -->
+<html>
+  <head>
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="inner">Button</div>
+    </div>
+    <script src="./index.js"></script>
+  </body>
+</html>
+```
+
+```CSS
+/* CSS代码 */
+.container{
+  width: 400px;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+}
+.inner{
+  height: 100px;
+  width: 100px;
+  background-color: burlywood;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+```
+
+## 方法一、阻止事件冒泡
+
+先给大家画一个示意图理解一下冒泡和捕获
+
+![示意图](/static/images/how-to-handle-click-event-outside-element/capture.png)
+
+由上面的 HTML 代码可以看到我们有一个嵌套的 div，如果我们点击 div 的话是按什么顺序触发这两个事件的呢。其实是默认按照冒泡的方式触发的，简单来说就是由内而外，如果还是不明白请看上面的解析图。这就导致我们点击`Button`所在的 div 也会触发事件，所以我们要阻止冒泡就可以实现我们的需求
+
+```javascript
+/**
+ * 方法一
+ * 利用阻止事件冒泡实现
+ */
+const inner = document.getElementsByClassName('inner')[0]
+const container = document.getElementsByClassName('container')[0]
+
+inner.addEventListener('click', (event) => {
+  event.stopPropagation() // chromium内核
+  window.event.cancelBubble = true // IE内核
+})
+
+container.addEventListener('click', (event) => {
+  console.log('success')
+})
+```
+
+## 方法二、利用判断点击事件的 target 是否为内部元素
+
+```javascript
+/**
+ * 下面介绍了三种方法来判断是否为内部元素
+ * 1.className是否相等，也可以使用id
+ * 2.DOM元素是否相等
+ * 3.点击的DOM是否包含内部DIV
+ */
+container.addEventListener('click', (event) => {
+  if ('inner' !== event.target.className) {
+    console.log(`success`)
+  }
+  if (inner !== event.target) {
+    console.log('success')
+  }
+  if (event.target.contains(inner) && event.target !== inner) {
+    console.log('success')
+  }
+})
+```
+
+## 方法三、使用 Vue `.self`修饰符
+
+当前元素自身时触发处理函数时才会触发函数
+
+原理：是根据 event.target 确定是否当前元素本身，来决定是否触发的事件/函数
+
+```
+<template>
+  <div id="app" @click.self="container">
+    <img alt="Vue logo" src="./assets/logo.png" >
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'app',
+  components: {
+    HelloWorld
+  },
+  methods:{
+    container() {
+      console.log('success')
+    }
+  }
+}
+</script>
+
+<style>
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 60px;
+  background-color: aqua;
+}
+</style>
+```
+
+这样的话也可以实现点击内部 div 之外的部分触发特定函数
+
+**大家有什么其他的方法可以实现欢迎评论内提出:smile:**

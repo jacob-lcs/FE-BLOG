@@ -12,6 +12,8 @@ const siteMetadata = {
   socialBanner: '/static/images/twitter-card.png',
   email: 'jacob.liucs@gmail.com',
   github: 'https://github.com/jacob-lcs',
+  yuque: 'https://www.yuque.com/jacob.lcs',
+  juejin: 'https://juejin.cn/user/254742428913885',
   locale: 'zh-CN',
   analytics: {
     // If you want to use an analytics provider you have to add it to the
