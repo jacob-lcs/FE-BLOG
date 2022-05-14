@@ -1,0 +1,52 @@
+---
+title: '如何实现 ES6 中的 Promise 方法'
+date: '2022-05-14'
+tags: ['JavaScript']
+draft: true
+summary: '在 Web 端做 API 请求时我们经常使用 async/await 语法，它实际上是 Promise 的语法糖，使用原生 JavaScript 应该如何实现呢？'
+---
+
+## Promise 基本用法
+
+首先我们来看下 Promise 的基本使用方法
+
+```js
+new Promise((resolve, reject) => {
+  setTimeout(() => {
+    console.log('执行 resolve 函数')
+    reject('error')
+  }, 1000)
+})
+  .then(
+    (res) => {
+      console.log('Promise 执行成功1', res)
+      return true
+    },
+    (err) => {
+      console.log('Promise 执行失败1', err)
+      return false
+    }
+  )
+  .then(
+    (res) => {
+      console.log('Promise 执行成功2', res)
+    },
+    (err) => {
+      console.log('Promise 执行失败2', err)
+    }
+  )
+```
+
+上述代码的执行结果如下：
+
+```text
+执行 resolve 函数
+Promise 执行失败1 error
+Promise 执行成功2 false
+```
+
+由上述的代码以及执行结果我们可以得出以下结论：
+
+- `then` 函数的返回值依旧是 `Promise`
+- `then` 函数内的 `return` 若未使用 `Promise.resolve` 或者 `Promise.reject`，则会默认以 `Promise.resolve` 返回
+- 执行 `resolve` 之后 `then` 回调才会执行
