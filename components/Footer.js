@@ -23,6 +23,9 @@ export default function Footer() {
           <div>{` • `}</div>
           <Link href="/">{siteMetadata.title}</Link>
         </div>
+        <div className="mb-2 flex space-x-2 text-sm text-gray-500 dark:text-gray-400">
+          鲁ICP备20000181号
+        </div>
       </div>
     </footer>
   )
