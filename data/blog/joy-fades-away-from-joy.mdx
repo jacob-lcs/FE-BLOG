@@ -25,18 +25,16 @@ summary: '之前做过一个算法题，算法要求就是写一个开心消消�
 
 页面的布局比较简单，格子的数据是一个二维数组的形式，说到这里大家应该已经明白界面是怎么做的了。
 
-```Vue
-<div
-  v-for="(item, index) in squareData"
-  :key="index"
-  class="row">
+```html
+<div v-for="(item, index) in squareData" :key="index" class="row">
   <div
     v-for="(_item, _index) in item"
     :key="_index"
     class="square"
     :class="_item"
     @mousedown="dragStart(index, _index)"
-    @mouseup="dragEnd">
+    @mouseup="dragEnd"
+  >
     {{_item}}
   </div>
 </div>

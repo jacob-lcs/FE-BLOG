@@ -16,28 +16,26 @@ summary: 'Vue 除了提供一些常规则事件处理之外还提供了一些像
 
 请看如下代码
 
-```Vue
+```html
 <template>
   <div class="about">
     <div @click="test1">
-      <div @click="test2">
-        测试
-      </div>
+      <div @click="test2">测试</div>
     </div>
   </div>
 </template>
 
 <script>
-export default {
-  methods:{
-    test1(){
-      console.log('test1')
+  export default {
+    methods: {
+      test1() {
+        console.log('test1')
+      },
+      test2() {
+        console.log('test2')
+      },
     },
-    test2(){
-      console.log('test2')
-    }
   }
-}
 </script>
 ```
 
@@ -53,13 +51,11 @@ export default {
 
 **现在就是`.stop`发挥作用的时候了**，修改代码如下
 
-```Vue
+```html
 <template>
   <div class="about">
     <div @click="test1">
-      <div @click.stop="test2">
-        测试
-      </div>
+      <div @click.stop="test2">测试</div>
     </div>
   </div>
 </template>
@@ -75,7 +71,7 @@ export default {
 
 这个时候我们再来说一下.prevent 修饰符，其作用就是阻止组件本来应该发生的事件，转而去执行自己定义的事件
 
-```Vue
+```html
 <template>
   <div class="about">
     <a href="https://lcs.show" @click="test2">跳转</a>
@@ -83,19 +79,19 @@ export default {
 </template>
 
 <script>
-export default {
-  methods:{
-    test2(){
-      console.log('test2')
-    }
+  export default {
+    methods: {
+      test2() {
+        console.log('test2')
+      },
+    },
   }
-}
 </script>
 ```
 
 上述代码我们并没有添加.prevent 修饰符，接下来的结果我们应该可以想到，点击之后会跳转到我写的网址中(也就是我的博客:sunglasses:)，当时当我们对这个代码稍作修改
 
-```Vue
+```html
 <template>
   <div class="about">
     <a href="https://lcs.show" @click.prevent="test2">跳转</a>
@@ -109,13 +105,11 @@ export default {
 
 其实这个的理解就很简单，就想我们第一节所说，网页是默认按照冒泡方式去触发函数的，但是当我们使用.capture 修饰符时，网页就会按照捕获的方式触发函数，也就是从外向内执行，**但是这个时候一定要注意，.capture 修饰符一定要写在外层才能生效**，原因大家应该能自己想清楚。
 
-```Vue
+```html
 <template>
   <div class="about">
     <div @click.capture="test1">
-      <div @click.stop="test2">
-        测试
-      </div>
+      <div @click.stop="test2">测试</div>
     </div>
   </div>
 </template>
@@ -134,12 +128,10 @@ export default {
 当前元素自身时触发处理函数时才会触发函数，原理：是根据 event.target 确定是否当前元素本身，来决定是否触发的事件/函数
 实例：如果点击内部点击 2，冒泡不会执行 gett 方法，因为 event.target 指的是内部点击 2 的 dom 元素，不是外部点击 1 的，所以不会触发自己的点击事件
 
-```Vue
+```html
 <div v-on:click.self="test1">
-    test1
-	<div v-on:click="test2">
-    	test2
-    </div>
+  test1
+  <div v-on:click="test2">test2</div>
 </div>
 ```
 
