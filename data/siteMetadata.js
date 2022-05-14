@@ -5,7 +5,7 @@ const siteMetadata = {
   description: '前端的理解、实践与分享',
   language: 'zh-cn',
   theme: 'system', // system, dark or light
-  siteUrl: 'https://fe-blog.vercel.app',
+  siteUrl: 'https://lcs.show',
   siteRepo: 'https://github.com/jacob-lcs/FE-BLOG',
   siteLogo: '/static/images/logo.png',
   image: '/static/images/avatar.png',
