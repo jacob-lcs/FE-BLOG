@@ -63,7 +63,7 @@ const Pre = (props) => {
         </button>
       )}
 
-      <pre>{props.children}</pre>
+      <pre className="max-h-screen overflow-y-auto">{props.children}</pre>
     </div>
   )
 }
