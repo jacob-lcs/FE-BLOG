@@ -1,0 +1,130 @@
+---
+title: '如何实现 ES6 中的 Promise 方法'
+date: '2022-05-14'
+tags: ['JavaScript']
+draft: true
+summary: '在 Web 端做 API 请求时我们经常使用 async/await 语法，它实际上是 Promise 的语法糖，使用原生 JavaScript 应该如何实现呢？'
+---
+
+## Promise 基本实现
+
+需要前置说明的是，`Promise` 一共有三种状态：`pending`、`rejected`、`fulfilled`，Promise 的初始状态为 `pending`，并且状态一旦改变就不会更改，也就是说以下的代码中不管有没有 `reject('error')`，返回值都是一样的。
+
+```js {3}
+new Promise((resolve, reject) => {
+  resolve('success')
+  reject('error')
+}).then(
+  (res) => {
+    console.log('Promise 执行成功', res)
+  },
+  (err) => {
+    console.log('Promise 执行失败', err)
+  }
+)
+// 输出：Promise 执行成功 success
+```
+
+另外，`then` 函数之后是可以再使用 `then` 的，类似于以下用法：
+
+```js
+new Promise((resolve) => resolve('success')).then((res) => res).then((res) => console.log(res))
+// 输出：success
+```
+
+所以 `then` 函数的返回值应该是一个 `Promise` 对象，对应到我们的例子则是 `MyPromise` 对象：
+
+```js {13,20}
+const PENDING = 'pending'
+const REJECTED = 'rejected'
+const FULFILLED = 'fulfilled'
+
+class MyPromise {
+  constructor(executor) {
+    this.value = undefined
+    this.reason = undefined
+    // 初始状态为 PENDING
+    this.status = PENDING
+
+    const resolve = (value) => {
+      if (this.status === PENDING) {
+        this.status = FULFILLED
+        this.value = value
+      }
+    }
+
+    const reject = (reason) => {
+      if (this.status === PENDING) {
+        this.status = REJECTED
+        this.reason = reason
+      }
+    }
+
+    executor(resolve, reject)
+  }
+
+  then(onFulfilled, onRejected) {
+    onFulfilled = onFulfilled ? onFulfilled : (v) => v
+    onRejected = onRejected
+      ? onRejected
+      : (e) => {
+          throw new Error(e)
+        }
+
+    return new MyPromise((resolve, reject) => {
+      if (this.status === FULFILLED) {
+        try {
+          const res = onFulfilled(this.value)
+          resolve(res)
+        } catch (e) {
+          reject(e)
+        }
+      } else if (this.status === REJECTED) {
+        try {
+          const res = onRejected(this.value)
+          resolve(res)
+        } catch (e) {
+          reject(e)
+        }
+      }
+    })
+  }
+}
+```
+
+> 上述代码是一个简单实现，我们下面来一步步完善~
+
+注意上述代码中高亮的代码行，只有在当前示例状态为 `pending` 的时候才会执行后续的操作。
+
+我们可以用第一段代码来试下这个 MyPromise 类：
+
+```js
+new MyPromise((resolve, reject) => {
+  resolve('success')
+  reject('error')
+}).then(
+  (res) => {
+    console.log('MyPromise 执行成功', res)
+  },
+  (err) => {
+    console.log('MyPromise 执行失败', err)
+  }
+)
+```
+
+以上代码的执行结果如下，可以看到能够达到期望的输出，与原生 `Promise` 一致：
+
+![执行结果](/static/images/how-to-implement-es6-promise/image1.png)
+
+## 实现微任务
+
+<iframe
+  src="//player.bilibili.com/player.html?aid=413179257&bvid=BV1oV411k7XY&cid=190983189&page=1"
+  scrolling="no"
+  border="0"
+  frameBorder="no"
+  framespacing="0"
+  allowFullScreen
+  className="w-full"
+  height="400"
+/>
