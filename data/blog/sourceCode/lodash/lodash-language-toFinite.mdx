@@ -1,5 +1,5 @@
 ---
-title: 'lodash.isArguments 源码解析'
+title: 'lodash.toFinite 源码解析'
 date: '2021-03-13'
 tags: ['lodash', '源码解析']
 draft: false
@@ -9,7 +9,7 @@ draft: false
 
 ```js
 const INFINITY = 1 / 0
-const MAX_INTEGER = 1.7976931348623157e+308
+const MAX_INTEGER = 1.7976931348623157e308
 
 function toFinite(value) {
   if (!value) {
@@ -17,7 +17,7 @@ function toFinite(value) {
   }
   value = toNumber(value)
   if (value === INFINITY || value === -INFINITY) {
-    const sign = (value < 0 ? -1 : 1)
+    const sign = value < 0 ? -1 : 1
     return sign * MAX_INTEGER
   }
   return value === value ? value : 0
@@ -40,7 +40,7 @@ _.toFinite(value)
 
 ### 参数
 
-1. `value` (*): 要转换的值。
+1. `value` (\*): 要转换的值。
 
 ### 返回
 
@@ -49,16 +49,15 @@ _.toFinite(value)
 ### 例子
 
 ```js
-_.toFinite(3.2);
+_.toFinite(3.2)
 // => 3.2
 
-_.toFinite(Number.MIN_VALUE);
+_.toFinite(Number.MIN_VALUE)
 // => 5e-324
 
-_.toFinite(Infinity);
+_.toFinite(Infinity)
 // => 1.7976931348623157e+308
 
-_.toFinite('3.2');
+_.toFinite('3.2')
 // => 3.2
-
 ```

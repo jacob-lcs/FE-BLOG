@@ -1,5 +1,5 @@
 ---
-title: 'lodash.isArguments 源码解析'
+title: 'lodash.isObjectLike 源码解析'
 date: '2021-03-22'
 tags: ['lodash', '源码解析']
 draft: false
@@ -16,7 +16,7 @@ function isObjectLike(value) {
 关于对象类型中，有一个比较特殊的值 `null`，如果使用 typeof 对其类型做判断的话，输出的值为 `object`
 
 ```js
-typeof null  // object
+typeof null // object
 ```
 
 所以此函数的做法是判断 value 的 type 为 object，并且值不为 null
@@ -35,7 +35,7 @@ _.isObjectLike(value)
 
 ### 参数
 
-value (*): 要检查的值。
+value (\*): 要检查的值。
 
 ### 返回
 
@@ -44,15 +44,15 @@ value (*): 要检查的值。
 ### 例子
 
 ```js
-_.isObjectLike({});
+_.isObjectLike({})
 // => true
 
-_.isObjectLike([1, 2, 3]);
+_.isObjectLike([1, 2, 3])
 // => true
 
-_.isObjectLike(_.noop);
+_.isObjectLike(_.noop)
 // => false
 
-_.isObjectLike(null);
+_.isObjectLike(null)
 // => false
 ```

@@ -1,5 +1,5 @@
 ---
-title: 'lodash.isArguments 源码解析'
+title: 'lodash.toNumber 源码解析'
 date: '2021-03-14'
 tags: ['lodash', '源码解析']
 draft: false
@@ -46,16 +46,18 @@ function toNumber(value) {
   // 去除开头与结尾的空格
   value = value.replace(reTrim, '')
   const isBinary = reIsBinary.test(value)
-  return (isBinary || reIsOctal.test(value))
+  return isBinary || reIsOctal.test(value)
     ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
-    : (reIsBadHex.test(value) ? NAN : +value)
+    : reIsBadHex.test(value)
+    ? NAN
+    : +value
 }
 ```
 
 该方法调用了 lodash 中封装的另外两个方法：
 
-+ [isObject](./isObject)：判断 value 是否为 Object 类型
-+ [isSymbol](./isSymbol)：判断 value 是否为 Symbol 类型
+- [isObject](./isObject)：判断 value 是否为 Object 类型
+- [isSymbol](./isSymbol)：判断 value 是否为 Symbol 类型
 
 前面的两个 if 判断思路比较简单，如果 value 值为 number 的话直接返回 value，如果为 Symbol 类型的话直接返回 NaN。
 
@@ -63,15 +65,15 @@ function toNumber(value) {
 
 ```js
 function MyNumberType(n) {
-  this.number = n;
+  this.number = n
 }
 
-MyNumberType.prototype.valueOf = function() {
-  return this.number;
-};
+MyNumberType.prototype.valueOf = function () {
+  return this.number
+}
 
-var myObj = new MyNumberType(4);
-myObj + 3; // 7
+var myObj = new MyNumberType(4)
+myObj + 3 // 7
 ```
 
 通过改写 `valueOf` 方法可以实现将 Object 当做 number 来处理，于是作者做了如下判断：
@@ -104,7 +106,7 @@ _.toNumber(value)
 
 ### 参数
 
-value (*): 要处理的值。
+value (\*): 要处理的值。
 
 ### 返回
 
@@ -113,15 +115,15 @@ value (*): 要处理的值。
 ### 例子
 
 ```js
-_.toNumber(3.2);
+_.toNumber(3.2)
 // => 3.2
 
-_.toNumber(Number.MIN_VALUE);
+_.toNumber(Number.MIN_VALUE)
 // => 5e-324
 
-_.toNumber(Infinity);
+_.toNumber(Infinity)
 // => Infinity
 
-_.toNumber('3.2');
+_.toNumber('3.2')
 // => 3.2
 ```
