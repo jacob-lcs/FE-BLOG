@@ -1,0 +1,64 @@
+---
+title: 'lodash.isArguments 源码解析'
+date: '2021-03-13'
+tags: ['lodash', '源码解析']
+draft: false
+---
+
+## 解析
+
+```js
+const INFINITY = 1 / 0
+const MAX_INTEGER = 1.7976931348623157e+308
+
+function toFinite(value) {
+  if (!value) {
+    return value === 0 ? value : 0
+  }
+  value = toNumber(value)
+  if (value === INFINITY || value === -INFINITY) {
+    const sign = (value < 0 ? -1 : 1)
+    return sign * MAX_INTEGER
+  }
+  return value === value ? value : 0
+}
+```
+
+[toNumber](./toNumber) 函数是将 value 值转换为 number 类型的变量。[toNumber](./toNumber) 的返回值有可能为 NaN，故在最后做了一次 `value === value` 的判断，因为 `NaN === NaN` 等于 `false`。
+
+## 文档
+
+```js
+_.toFinite(value)
+```
+
+转换 `value` 为一个有限数字。
+
+### 添加版本
+
+4.12.0
+
+### 参数
+
+1. `value` (*): 要转换的值。
+
+### 返回
+
+(number): 返回转换后的数字。
+
+### 例子
+
+```js
+_.toFinite(3.2);
+// => 3.2
+
+_.toFinite(Number.MIN_VALUE);
+// => 5e-324
+
+_.toFinite(Infinity);
+// => 1.7976931348623157e+308
+
+_.toFinite('3.2');
+// => 3.2
+
+```

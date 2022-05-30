@@ -1,0 +1,69 @@
+---
+title: 'lodash.compact 源码解析'
+date: '2021-03-20'
+tags: ['lodash', '源码解析']
+draft: false
+---
+
+## 解析
+
+```js
+function compact(array) {
+  let resIndex = 0
+  const result = []
+
+  if (array == null) {
+    return result
+  }
+
+  for (const value of array) {
+    if (value) {
+      result[resIndex++] = value
+    }
+  }
+  return result
+}
+```
+
+该函数的思路比较简单，首先判断用户输入是否为 `undefined` 或者 `null`，如果是的话直接将输入原样返回，做兜底处理。
+
+然后再对输入 `array` 进行循环遍历，通过 if 判断来过滤掉为 `false` 的值。
+
+另外此方法还可以处理可迭代对象，比如 Set，示例如下：
+
+```js
+const newSet = new Set([1, '', false, 'ss'])
+_.compact(newSet)
+```
+
+::: warning
+在不同版本的 lodash 中实现方法不尽相同，如果在 lodash4.x 中使用该方法计算 Set 类型时，会返回空数组。
+本解析基于 lodash v5.0.0
+:::
+
+## 文档
+
+```js
+_.compact(array)
+```
+
+创建一个新数组，包含原数组中所有的非假值元素。例如false, null,0, "", undefined, 和 NaN 都是被认为是“假值”。
+
+### 引入版本
+
+0.1.0
+
+### 参数
+
+array (Array): 待处理的数组
+
+### 返回值
+
+(Array): 返回过滤掉假值的新数组。
+
+### 例子
+
+```js
+_.compact([0, 1, false, 2, '', 3]);
+// => [1, 2, 3]
+```

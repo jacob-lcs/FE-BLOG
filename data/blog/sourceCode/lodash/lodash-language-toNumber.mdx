@@ -1,0 +1,127 @@
+---
+title: 'lodash.isArguments 源码解析'
+date: '2021-03-14'
+tags: ['lodash', '源码解析']
+draft: false
+---
+
+## 解析
+
+```js
+/** 用作各种 `number` 常量的引用，表示 NaN。 */
+const NAN = 0 / 0
+
+/** 用来匹配开头与结尾的空格 */
+const reTrim = /^\s+|\s+$/g
+
+/** 用于检测错误的有符号十六进制字符串值。*/
+const reIsBadHex = /^[-+]0x[0-9a-f]+$/i
+
+/** 用来判断二进制字符串 */
+const reIsBinary = /^0b[01]+$/i
+
+/** 用来判断八进制字符串 */
+const reIsOctal = /^0o[0-7]+$/i
+
+const freeParseInt = parseInt
+
+function toNumber(value) {
+  // 如果 value 为 number 的话直接将其返回
+  if (typeof value === 'number') {
+    return value
+  }
+  // 如果 value 为 Symbol 的话返回 NaN
+  if (isSymbol(value)) {
+    return NAN
+  }
+  // 在这里判断 value 是不是 Object 类型
+  // 在这里有可能会有疑问，判断为对象类型的话为什么不直接返回 NaN 呢，下面会给大家详细讲
+  if (isObject(value)) {
+    const other = typeof value.valueOf === 'function' ? value.valueOf() : value
+    value = isObject(other) ? `${other}` : other
+  }
+  if (typeof value !== 'string') {
+    return value === 0 ? value : +value
+  }
+  // 去除开头与结尾的空格
+  value = value.replace(reTrim, '')
+  const isBinary = reIsBinary.test(value)
+  return (isBinary || reIsOctal.test(value))
+    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
+    : (reIsBadHex.test(value) ? NAN : +value)
+}
+```
+
+该方法调用了 lodash 中封装的另外两个方法：
+
++ [isObject](./isObject)：判断 value 是否为 Object 类型
++ [isSymbol](./isSymbol)：判断 value 是否为 Symbol 类型
+
+前面的两个 if 判断思路比较简单，如果 value 值为 number 的话直接返回 value，如果为 Symbol 类型的话直接返回 NaN。
+
+比较疑惑的是下面一个判断条件，其中 `isObject` 的话作用是判断 value 是否为 Object 类型，那么我们可以会想为什么不直接返回 NaN 呢，其实作者考虑到了下面这种场景：
+
+```js
+function MyNumberType(n) {
+  this.number = n;
+}
+
+MyNumberType.prototype.valueOf = function() {
+  return this.number;
+};
+
+var myObj = new MyNumberType(4);
+myObj + 3; // 7
+```
+
+通过改写 `valueOf` 方法可以实现将 Object 当做 number 来处理，于是作者做了如下判断：
+
+```js
+if (isObject(value)) {
+  // 当前 value 存在 valueOf 函数，有则直接调用
+  const other = typeof value.valueOf === 'function' ? value.valueOf() : value
+  value = isObject(other) ? `${other}` : other
+}
+```
+
+使用该方法要注意的是，对于 `-0xaa` 这样的值会直接返回 NaN，但是使用 parseInt 的话可以返回正确的值：
+
+```js
+parseInt('-0xaa') // -170
+```
+
+## 文档
+
+```js
+_.toNumber(value)
+```
+
+转换 value 为一个数字。
+
+### 添加版本
+
+4.0.0
+
+### 参数
+
+value (*): 要处理的值。
+
+### 返回
+
+(number): 返回数字。
+
+### 例子
+
+```js
+_.toNumber(3.2);
+// => 3.2
+
+_.toNumber(Number.MIN_VALUE);
+// => 5e-324
+
+_.toNumber(Infinity);
+// => Infinity
+
+_.toNumber('3.2');
+// => 3.2
+```

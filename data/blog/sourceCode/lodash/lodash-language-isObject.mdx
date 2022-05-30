@@ -1,0 +1,53 @@
+---
+title: 'lodash.isArguments 源码解析'
+date: '2021-03-14'
+tags: ['lodash', '源码解析']
+draft: false
+---
+
+## 解析
+
+```js
+function isObject(value) {
+  const type = typeof value
+  return value != null && (type === 'object' || type === 'function')
+}
+```
+
+此方法用来判断 value 是否为一个对象，需要注意的一点是 `null` 属于 **基本数据类型**，但是 `typeof null` 的返回值为 `object`，所以要对其做特殊处理。
+
+## 文档
+
+```js
+_.isObject(value)
+```
+
+检查 value 是否为 Object 的 [language type](https://262.ecma-international.org/6.0/#sec-ecmascript-language-types)。 (例如： arrays, functions, objects, regexes,new Number(0), 以及 new String(''))
+
+### 添加版本
+
+0.1.0
+
+### 参数
+
+value (*): 要检查的值。
+
+### 返回
+
+(boolean): 如果 value 为一个对象，那么返回 true，否则返回 false。
+
+### 例子
+
+```js
+_.isObject({});
+// => true
+
+_.isObject([1, 2, 3]);
+// => true
+
+_.isObject(_.noop);
+// => true
+
+_.isObject(null);
+// => false
+```

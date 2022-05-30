@@ -1,0 +1,49 @@
+---
+title: 'lodash.isArguments 源码解析'
+date: '2021-03-14'
+tags: ['lodash', '源码解析']
+draft: false
+---
+
+## 解析
+
+```js
+function isSymbol(value) {
+  const type = typeof value
+  return type === 'symbol' || (type === 'object' && value != null && getTag(value) === '[object Symbol]')
+}
+```
+
+此方法调用了 lodash 中另外一个封装的方法：
+
++ [getTag](../internal/getTag)：返回 object 类型 value 的 toString 值
+
+## 文档
+
+```js
+_.isSymbol(value)
+```
+
+检查 value 是否是原始 Symbol 或者对象。
+
+### 添加版本
+
+4.0.0
+
+### 参数
+
+value (*): 要检查的值。
+
+### 返回
+
+(boolean): 如果 value 为一个symbol，那么返回 true，否则返回 false。
+
+### 例子
+
+```js
+_.isSymbol(Symbol.iterator);
+// => true
+
+_.isSymbol('abc');
+// => false
+```

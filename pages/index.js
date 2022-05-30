@@ -1,3 +1,4 @@
+import classNames from 'classnames'
 import Link from '@/components/Link'
 import { PageSEO } from '@/components/SEO'
 import Tag from '@/components/Tag'
@@ -25,6 +26,20 @@ export default function Home({ posts }) {
           <p className="text-lg leading-7 text-gray-500 dark:text-gray-400">
             {siteMetadata.description}
           </p>
+        </div>
+        <div className="mb-3 flex border-none">
+          {[
+            { name: '全部', path: '/' },
+            { name: '技术文章', path: '/tags/技术文章' },
+            { name: '源码解析', path: '/tags/源码解析' },
+          ].map((item) => (
+            <div
+              className="mr-4 cursor-pointer rounded-2xl border-2 border-b-amber-500 pt-1 pb-1 pr-3 pl-3 dark:border-b-cyan-500"
+              key={item.path}
+            >
+              <Link href={item.path}>{item.name}</Link>
+            </div>
+          ))}
         </div>
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
           {!posts.length && '现在还没有博客哦'}

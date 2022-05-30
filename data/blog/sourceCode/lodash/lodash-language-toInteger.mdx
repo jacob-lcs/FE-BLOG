@@ -1,0 +1,58 @@
+---
+title: 'lodash.isArguments 源码解析'
+date: '2021-03-13'
+tags: ['lodash', '源码解析']
+draft: false
+---
+
+## 解析
+
+```js
+function toInteger(value) {
+  const result = toFinite(value)
+  // 计算得到 result 的小数部分
+  const remainder = result % 1
+
+  return remainder ? result - remainder : result
+}
+```
+
+[toFinite](./toFinite) 函数的作用为将 value 转为有限数字。
+
+此函数的思路比较简单，就是计算得到 value 的小数部分，然后将 value 减去该小数即可得到整数。
+
+## 文档
+
+```js
+_.toInteger(value)
+```
+
+将 value 转为一个整数。
+
+注意: 这个方法基于 [`ToInteger`](https://262.ecma-international.org/7.0/#sec-tointeger)。
+
+### 添加版本
+
+4.0.0
+
+### 参数
+
+value (*): 要转换的值。
+返回
+(number): 返回转换后的整数。
+
+### 例子
+
+```js
+_.toInteger(3.2);
+// => 3
+
+_.toInteger(Number.MIN_VALUE);
+// => 0
+
+_.toInteger(Infinity);
+// => 1.7976931348623157e+308
+
+_.toInteger('3.2');
+// => 3
+```js

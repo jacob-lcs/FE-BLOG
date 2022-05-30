@@ -1,0 +1,49 @@
+---
+title: 'lodash.isArguments 源码解析'
+date: '2021-03-22'
+tags: ['lodash', '源码解析']
+draft: false
+---
+
+## 解析
+
+```js
+function isArguments(value) {
+  return isObjectLike(value) && getTag(value) == '[object Arguments]'
+}
+```
+
+此方法调用了 lodash 中另外两个封装的方法：
+
++ [isObjectLike](./isObjectLike)：检查 value 是否是类对象。如果一个值是类对象，那么它不应该是 null，而且 typeof 后的结果是 "object"。
++ [getTag][../internal/getTag]：该函数是返回 value 的 toString 值。
+
+## 文档
+
+```js
+_.isArguments(value)
+```
+
+检查 value 是否是一个类 arguments 对象。
+
+### 添加版本
+
+0.1.0
+
+### 参数
+
+value (*): 要检查的值。
+
+### 返回
+
+(boolean): 如果value是一个 arguments 对象 返回 true，否则返回 false。
+
+### 例子
+
+```js
+_.isArguments(function() { return arguments; }());
+// => true
+
+_.isArguments([1, 2, 3]);
+// => false
+```
