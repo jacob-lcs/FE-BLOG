@@ -28,24 +28,24 @@ summary: '由于自己想要实现一个课程推荐系统，需要在各大视�
 
 然后我们随意点击页面上的一个课程，找到其课程 url 的规律，打开**沟通心理学**这门课程，其 URL 是`https://www.icourse163.org/course/HIT-1001515007`，而沟通心理学这门课程返回的信息是：
 
-```json
+```json5
 // 在这里我只保留了我需要的一些数据
 {
-  "name": "沟通心理学",
-  "id": 1001515007,
-  "schoolPanel": { "id": 9005, "name": "哈尔滨工业大学", "shortName": "HIT" }
+  name: '沟通心理学',
+  id: 1001515007,
+  schoolPanel: { id: 9005, name: '哈尔滨工业大学', shortName: 'HIT' },
 }
 ```
 
 我们可以发现课程的 URL 就是学校的简称-id，这样就可以组成课程 URL，现在我们得知课程 URL 如何得知，那么这些课程数据需要传什么参数呢，如下：
 
-```json
+```json5
 {
-  "categoryId": -1, // 类别id，因为我这里选的全部，所以是-1
-  "type": 30,
-  "orderBy": 0,
-  "pageIndex": 1, // 第几页
-  "pageSize": 20 // 每页多少条数据
+  categoryId: -1, // 类别id，因为我这里选的全部，所以是-1
+  type: 30,
+  orderBy: 0,
+  pageIndex: 1, // 第几页
+  pageSize: 20, // 每页多少条数据
 }
 ```
 

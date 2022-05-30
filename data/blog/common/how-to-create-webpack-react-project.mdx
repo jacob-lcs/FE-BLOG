@@ -294,7 +294,7 @@ CSS、SCSS 与 SASS 的配置都大同小异，大家可以移步到我的 [GitH
 
 webpack5 内置 assets 类型，我们不需要额外安装插件就可以进行图片等资源文件的解析，配置如下：
 
-```javascript
+```
 {
   test: /\.(jpe?g|png|gif|svg|woff|woff2|eot|ttf|otf)$/i,
   type: "asset/resource",
@@ -309,7 +309,7 @@ webpack5 内置 assets 类型，我们不需要额外安装插件就可以进行
 
 前面提到，webpack5 引入了缓存来提高二次构建速度，我们只需要在 webpack 配置文件中加入如下代码即可开心缓存
 
-```js
+```
 cache: {
   type: 'filesystem',
   // 可选配置

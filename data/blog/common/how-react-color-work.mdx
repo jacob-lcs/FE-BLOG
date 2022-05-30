@@ -106,16 +106,18 @@ $$
 如何横向表示色相呢，只需要一行 CSS 代码：
 
 ```css
-background: linear-gradient(
-  to right,
-  #f00 0%,
-  #ff0 17%,
-  #0f0 33%,
-  #0ff 50%,
-  #00f 67%,
-  #f0f 83%,
-  #f00 100%
-);
+div {
+  background: linear-gradient(
+    to right,
+    #f00 0%,
+    #ff0 17%,
+    #0f0 33%,
+    #0ff 50%,
+    #00f 67%,
+    #f0f 83%,
+    #f00 100%
+  );
+}
 ```
 
 这样即可大致表达出 0-360 度的色相值，效果如下：![image.png](/static/images/how-react-color-work/hue.png)根据鼠标拖动的位置距离左边界的距离就可以计算出色相值。
@@ -156,8 +158,10 @@ const handleChange = (event: any) => {
 在 ReactColor 中按照如下方式来表示饱和度与明度。![image.png](/static/images/how-react-color-work/saturation.png)其实用 CSS 表示也比较简单，使用渐变色来表示就可以实现该效果。
 
 ```css
-background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
-background: linear-gradient(to top, #000, rgba(0, 0, 0, 0));
+div {
+  background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
+  background: linear-gradient(to top, #000, rgba(0, 0, 0, 0));
+}
 ```
 
 与色相的计算方式一样，也是根据鼠标拖动的位置距离左边界和下边界的距离来计算，计算方法可以参考[色相的思路](#SDLwT)。

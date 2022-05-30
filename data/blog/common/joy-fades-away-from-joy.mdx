@@ -102,56 +102,58 @@ summary: '之前做过一个算法题，算法要求就是写一个开心消消�
 
 **代码如下**
 
-```typescript
-clear(): void {
-  const m: number = 10;
-  const n: number = 10;
-  while (true) {
-    const del: any[] = [];
-    for (let i: number = 0; i < m; i++) {
-      for (let j: number = 0; j < n; j++) {
-        if (this.squareData[i][j] === '0') {
-          continue;
+```html
+<script>
+  clear() {
+    const m = 10;
+    const n = 10;
+    while (true) {
+      const del = [];
+      for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+          if (this.squareData[i][j] === '0') {
+            continue;
+          }
+          let x0 = i;
+          let x1 = i;
+          let y0 = j;
+          let y1 = j;
+          while (x0 >= 0 && x0 > i - 3 && this.squareData[x0][j] === this.squareData[i][j]) {
+            --x0;
+          }
+          while (x1 < m && x1 < i + 3 && this.squareData[x1][j] === this.squareData[i][j]) {
+            ++x1;
+          }
+          while (y0 >= 0 && y0 > j - 3 && this.squareData[i][y0] === this.squareData[i][j]) {
+            --y0;
+          }
+          while (y1 < n && y1 < j + 3 && this.squareData[i][y1] === this.squareData[i][j]) {
+            ++y1;
+          }
+          if (x1 - x0 > 3 || y1 - y0 > 3) {
+            del.push([i, j]);
+          }
         }
-        let x0: number = i;
-        let x1: number = i;
-        let y0: number = j;
-        let y1: number = j;
-        while (x0 >= 0 && x0 > i - 3 && this.squareData[x0][j] === this.squareData[i][j]) {
-          --x0;
-        }
-        while (x1 < m && x1 < i + 3 && this.squareData[x1][j] === this.squareData[i][j]) {
-          ++x1;
-        }
-        while (y0 >= 0 && y0 > j - 3 && this.squareData[i][y0] === this.squareData[i][j]) {
-          --y0;
-        }
-        while (y1 < n && y1 < j + 3 && this.squareData[i][y1] === this.squareData[i][j]) {
-          ++y1;
-        }
-        if (x1 - x0 > 3 || y1 - y0 > 3) {
-          del.push([i, j]);
+      }
+      if (del.length === 0) {
+        break;
+      }
+      this.score += del.length;
+      for (const square of del) {
+        this.$set(this.squareData[square[0]], square[1], '0');
+      }
+      for (let j = 0; j < n; ++j) {
+        let t = m - 1;
+        for (let i = m - 1; i >= 0; --i) {
+          if (this.squareData[i][j] !== '0') {
+            [this.squareData[t][j], this.squareData[i][j]] = [this.squareData[i][j], this.squareData[t][j]];
+            t -= 1;
+          }
         }
       }
     }
-    if (del.length === 0) {
-      break;
-    }
-    this.score += del.length;
-    for (const square of del) {
-      this.$set(this.squareData[square[0]], square[1], '0');
-    }
-    for (let j: number = 0; j < n; ++j) {
-      let t: number = m - 1;
-      for (let i: number = m - 1; i >= 0; --i) {
-        if (this.squareData[i][j] !== '0') {
-          [this.squareData[t][j], this.squareData[i][j]] = [this.squareData[i][j], this.squareData[t][j]];
-          t -= 1;
-        }
-      }
-    }
-  }
-},
+  },
+</script>
 ```
 
 ## 游戏结束
