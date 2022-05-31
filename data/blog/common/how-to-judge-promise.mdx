@@ -1,0 +1,97 @@
+---
+title: '如何判断一个值是否为 Promise'
+date: '2022-05-31'
+tags: ['JavaScript', '技术文章']
+draft: false
+summary: Promise 对象用于表示一个异步操作的最终完成（或失败）及其结果值。我们应该如何判断一个值是否为 Promise 对象呢？
+---
+
+## Promise 是如何创建的
+
+我们的目的是要判断一个值是否为 `Promise`，那我们不妨先看下 Promise 对象是如何创建的
+
+```js
+const test = new Promise((resolve) => {
+  setTimeout(() => {
+    resolve('success')
+  }, 2000)
+})
+
+test.then((res) => {
+  console.log(res)
+})
+```
+
+上述代码会在 2s 之后输出 `success`。由此我们可以看出 `test` 是 `Promise` 创建的一个实例，我们可以画出以下原型链示意图：
+
+![Promise 原型图](/static/images/how-to-judge-promise/image1.jpg)
+
+既然 `test` 的 `__proto__` 指向 `Promise.prototype`，那我们能不能用 `instanceOf` 呢？
+
+## instanceOf ??
+
+首先来看下 `instanceOf` 函数的定义：
+
+> instanceof 运算符用于检测构造函数的 prototype 属性是否出现在某个实例对象的原型链上。
+
+因为 `test` 的 `__proto__` 指向 `Promise.prototype`，所以原理上使用 `instanceOf` 是可行的：
+
+```js
+// test 为上述代码块中创建的 test 变量
+test instanceof Promise
+```
+
+以上代码校验结果为 `true`。是不是之后可以用这种方式判定呢？答案是不可以，因为有一种特殊情况，我们常用的 `Promise` 是 ES6 对 `Promise/A+` 的一种实现，开源社区中的一些库是自己实现的，比如 [`bluebird`](https://github.com/petkaantonov/bluebird/blob/808fdf8fce0cf4dbb1b95129607777a0cd53df36/src/promise.js)。所以我们使用 ES6 原生 Promise 去校验 `bluebird` 的话肯定是校验不通过的。
+
+```js
+import { Promise as BluebirdPromise } from 'bluebird'
+const test = new BluebirdPromise((resolve) => resolve('success'))
+console.log(test instanceof Promise) // 输出为 false
+console.log(test instanceof bluebirdPromise) // 输出为 true
+```
+
+## 直接判断是否有 then ??
+
+既然我们不能直接使用 `instanceOf` 判断的话，我们是有可以判断值是否有 `then` 呢？
+
+> 根据一个值的形态（具有哪些属性）对这个值的类型做出一些假定。这种类型检查一般用术语 _鸭子类型_ 来表示 —— 「如果它看起来像只鸭子，叫起来相纸鸭子，那它一定就是只鸭子」。
+
+那么我们可以写出以下代码：
+
+```js
+if (
+  p !== null &&
+  (typeof p === 'object' || typeof p === 'function') &&
+  typeof p.then === 'function'
+) {
+  // 那么这个值为 thenable
+}
+```
+
+但是这种方式判断确实会导致一些问题，比如一个对象中恰好定义了一个 `then` 函数，但其并不是表示 Promise 或者 thenable。
+
+```js
+class Test {
+  then() {
+    console.log('命名冲突！')
+  }
+}
+```
+
+## 是不是不需要判断呢？
+
+我们可以直接使用 `Promise.resolve()` 来处理未知的值，代码如下：
+
+```js
+Promise.resolve(valueOrPromiseItDoesntMatter).then((value) => {
+  console.log(value)
+})
+```
+
+`Promise.resolve()` 中可以对 Promise 和 thenable 做处理，不需要我们做额外判断，可以说是一个比较完美的处理方式了。
+
+**参考文献：**
+
+- _You Don't Know JavaScript: Async & Performance_ by Kyle Simpson (O'Reilly). Copyright 2015 Getify Solutions, Inc., 978-1-491-90419-0
+- [instanceof - MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/instanceof)
+- [How do I tell if an object is a Promise? - stackOverflow](https://stackoverflow.com/questions/27746304/how-do-i-tell-if-an-object-is-a-promise)
