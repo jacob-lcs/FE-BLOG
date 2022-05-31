@@ -17,7 +17,7 @@ const projectsData = [
     title: '开心消消乐',
     description: `一个比较简单的消消乐游戏`,
     imgSrc: '/static/images/projects/xxle.png',
-    href: 'http://xxle.lcs.show/',
+    href: '/xxle',
   },
 ]
 

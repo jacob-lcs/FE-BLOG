@@ -162,6 +162,28 @@ module.exports = {
           },
         },
       }),
+      keyframes: {
+        jitter: {
+          'from, 50%, to': {
+            transform: 'rotate(0deg)',
+          },
+          '10%, 30%': {
+            transform: 'rotate(10deg)',
+          },
+          '20%': {
+            transform: 'rotate(20deg)',
+          },
+          '60%, 80%': {
+            transform: 'rotate(-10deg)',
+          },
+          '70%': {
+            transform: 'rotate(-20deg)',
+          },
+        },
+      },
+      animation: {
+        jitter: 'jitter 0.5s infinite',
+      },
     },
   },
   plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')],
