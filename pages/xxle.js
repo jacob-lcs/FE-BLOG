@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import classNames from 'classnames'
 import { PageSEO } from '@/components/SEO'
 import siteMetadata from '@/data/siteMetadata'
 
@@ -11,7 +12,7 @@ export default function HappyEliminate() {
   const [startCoordinates, setStartCoordinates] = useState([0, 0])
   // 点击的方块位置
   const [clickSquare, setClickSquare] = useState([])
-  const colors = ['#8D98CA', '#A9A2F6', '#56CAD9', '#CDBEB0', '#D2E08E', '#8EE0A7', '#8EB4E0']
+  const colors = [1, 2, 3, 4, 5, 6, 7]
 
   const fillSquare = (_squareData, _score) => {
     for (let i = 0; i < 10; i++) {
@@ -160,7 +161,23 @@ export default function HappyEliminate() {
               {square.map((item, j) => {
                 return (
                   <div
-                    className={`white m-0.5 h-10 w-10 cursor-pointer rounded active:animate-jitter bg-[${item}]`}
+                    className={classNames(
+                      'm-0.5',
+                      'h-10',
+                      'w-10',
+                      'cursor-pointer',
+                      'rounded',
+                      'active:animate-jitter',
+                      {
+                        'bg-[#8D98CA]': item === 1,
+                        'bg-[#A9A2F6]': item === 2,
+                        'bg-[#56CAD9]': item === 3,
+                        'bg-[#CDBEB0]': item === 4,
+                        'bg-[#D2E08E]': item === 5,
+                        'bg-[#8EE0A7]': item === 6,
+                        'bg-[#8EB4E0]': item === 7,
+                      }
+                    )}
                     key={`${item}-${j}`}
                     onMouseUp={dragEnd}
                     onMouseDown={(e) => dragStart(e, i, j)}
