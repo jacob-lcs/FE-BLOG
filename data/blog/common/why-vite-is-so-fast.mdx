@@ -1,0 +1,332 @@
+---
+title: 'vite 为什么这么快 🚀'
+date: '2022-06-08'
+tags: ['Vite', 'JavaScript', '技术文章']
+draft: false
+summary: 'Vite 可以说是次世代的打包工具，底层基于 esbuild，打包速度大幅度提升，极大地提升了开发幸福感。Vite 是怎么做到的呢？'
+---
+
+## 背景
+
+在现有的项目体系中最常见的是 webpack，其会从入口文件扫描项目中的所有依赖，然后打包为一个或多个 bundle，浏览器通过 `script` 标签引入 bundle 以渲染页面。比较有代表性的打包工具有 webpack、parcel、rollup。
+
+上述介绍的工具都是将项目文件打包为一个或多个 bundle，在开发环境中也是如此，因此你需要等一个非常漫长的冷启动过程，随着你的项目越来越大，冷启动时间也会越来越长。即使你的项目开启了 HMR，随着项目复杂度的提升，热更新的速度也会越来越慢。
+
+就拿现有的营销平台 OASIS 举例，之前使用的是 wbepack4，热更新时间需要 10s，之后升级到了 webpack5，热更新时间减少到了 3s。但是冷启动时间依旧很长，即使配置了 webpack5 通用缓存，冷启动时间也只能缩短到 6s。启动慢的原因都是因为项目需要 bundle，Dev Server 必须等待所有模块构建完成才会启动。
+
+![webpack serve 流程图 (1)](/static/images/why-vite-is-so-fast/image1.png)
+
+vite 是什么思路呢？既然 webpack 等打包工具都是将项目文件打包为一个或多个 bundle，不打包能否进行开发环境下的预览呢，这种做法就目前来看是可行的。为什么之前没有采取这种方式呢？因为早些时候的浏览器不支持原生 es module 加载，只有打包为 bundle 之后浏览器才能进行识别。
+
+## 浏览器原生 ES modules 加载能力
+
+前面讲到 Vite 在开发环境下是不会将项目代码打包为一个 bundle 的，其依赖现代浏览器的原生 es module 加载能力，下面会通过一些代码来介绍浏览器此原生能力。
+
+<img src="/static/images/why-vite-is-so-fast/image2.png" width="600" />
+
+<img src="/static/images/why-vite-is-so-fast/image3.png" width="600" />
+
+首先我们建一个有如下目录结构的项目：
+
+```wiki
+.
+├── index.html
+└── utils
+    └── random.js
+```
+
+项目中对应的文件如下：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ES module 测试</title>
+  </head>
+  <body>
+    <button id="random-button">显示随机数</button>
+    <div id="random-result"></div>
+  </body>
+  <script type="module">
+    import { random } from './utils/random.js'
+
+    const buttonElem = document.querySelector('#random-button')
+    const resultElem = document.querySelector('#random-result')
+    buttonElem.addEventListener('click', () => {
+      while (resultElem.firstChild) {
+        resultElem.removeChild(resultElem.firstChild)
+      }
+      resultElem.append(random())
+    })
+  </script>
+</html>
+```
+
+```js
+// utils/random.js
+export const random = (a, b) => {
+  return Math.random()
+}
+```
+
+在上面的 demo 中我们实现了一个简单的函数，点击一次按钮返回一个随机数：
+
+![image-20211116211559096](/static/images/why-vite-is-so-fast/image4.png)
+
+通过上面的 demo 可以看到，就是我们平时在项目开发中使用最多的 ES module 规范，并没有借助 babel 进行转译，能够直接被浏览器识别并正确运行。当然上面只展示了一个文件，并没有使用 npm 包，我们通过如下命令安装 `lodash` 来试下：
+
+```bash
+npm init -y
+npm i lodash
+```
+
+安装后的目录结构如下：
+
+```
+.
+├── index.html
+├── package-lock.json
+├── package.json
+└── utils
+    └── random.js
+```
+
+修改 `utils/random.js` 文件：
+
+```diff
+// utils/random.js
++ import lodashRandom from 'lodash/random'
+
+export const random = (a, b) => {
+-  return Math.random()
++  return lodashRandom()
+}
+```
+
+再次运行项目，会看到控制台报了一个错，如下：
+
+```
+Uncaught TypeError: Failed to resolve module specifier "lodash/random". Relative references must start with either "/", "./", or "../".
+```
+
+这是因为浏览器并不能识别 node 类库，import 路径必须以 `/`、`./` 或者 `../` 开头才行，所以我们需要手动将 `lodash` 包的 `import` 导向 `node_modules` 文件夹下：
+
+```diff
+- import lodashRandom from 'lodash/random'
++ import lodashRandom from '/node_modules/lodash/random.js'
+
+export const random = (a, b) => {
+  return lodashRandom()
+}
+```
+
+刷新浏览器，在 network 面板中能够看到浏览器正确加载了 `random.js` 文件，但是页面仍不能正常工作，控制台报错如下：
+
+```
+Uncaught SyntaxError: The requested module '/node_modules/lodash/random.js' does not provide an export named 'default'
+```
+
+我们再来看下 `/node_modules/lodash/random.js` 文件中的内容：
+
+```js
+function random(lower, upper, floating) {
+  // 此处省略了一些不必要的代码
+}
+
+module.exports = random
+```
+
+可以看到在 lodash random.js 文件中并没有使用 ES module 规范，使用的是 commonjs 规范，而我们使用了 `type="module"`，这导致浏览器不能识别，进而报错。
+
+既然浏览器不识别 commonjs 规范的包，那我们换成 `lodash-es` 呢？`lodash-es` 是 `lodash` 的 ES modules 版本，我们将 `/utils/random.js` 修改为以下代码：
+
+```diff
+- import lodashRandom from '/node_modules/lodash/random.js'
++ import lodashRandom from '/node_modules/lodash-es/random.js'
+
+export const random = (a, b) => {
+  return lodashRandom()
+}
+```
+
+再次运行项目发现项目可以正确运行了！
+
+![image-20211116213418291](/static/images/why-vite-is-so-fast/image5.png)
+
+我们看下 network 面板中项目都加载了哪些文件：
+
+<img src="/static/images/why-vite-is-so-fast/image6.png" width="600" />
+
+可以看到，虽然我们只加载了一个函数，但是却加载了 24 个 js 文件，如果我们多引入几个函数呢？
+
+```diff
+import lodashRandom from '/node_modules/lodash-es/random.js'
++ import lodashGet from '/node_modules/lodash-es/get.js'
++ import lodashdebounce from '/node_modules/lodash-es/debounce.js'
++ import lodashIsEqual from '/node_modules/lodash-es/isEqual.js'
++ import lodashOverEvery from '/node_modules/lodash-es/overEvery.js'
+
+export const random = (a, b) => {
+  return lodashRandom()
+}
+```
+
+我们在原来的基础上添加了 4 个函数的引入，再看下 network 面板：
+
+<img src="/static/images/why-vite-is-so-fast/image7.png" width="600" />
+
+可以看到请求的文件数量飙升到了 142 个，虽然都是小文件，但是请求数量过多的话会极大的影响页面打开速度。
+
+🤖 介绍完上述的内容，大家可以了解到使用浏览器原生 ES modules 能力运行项目存在**_两个问题_**：
+
+- 目前 NPM 市场中存在大量的 `commonjs` 规范的类库，浏览器**不能正确识别**
+- 对于符合 ES modules 规范的类库能正确识别，但是加载的文件**过多**
+
+对于上述两个问题，Vite 采用**预构建**的方式进行解决，下面会进行介绍。
+
+## Vite Dev 表现
+
+在看其实现之前我们先看下其表现。首先我们安装下 `vite`：
+
+```bash
+npm i vite -D
+```
+
+在 package.json 中添加如下命令：
+
+```json
+{
+  "scripts": {
+    "start": "vite"
+  }
+}
+```
+
+因为 Vite 能够识别 Node 类库，所以我们把 `/utils/random.js` 修改为：
+
+```diff
+- import lodashRandom from '/node_modules/lodash-es/random.js'
+- import lodashGet from '/node_modules/lodash-es/get.js'
+- import lodashdebounce from '/node_modules/lodash-es/debounce.js'
+- import lodashIsEqual from '/node_modules/lodash-es/isEqual.js'
+- import lodashOverEvery from '/node_modules/lodash-es/overEvery.js'
++ import {
++  random as lodashRandom,
++  get as lodashGet,
++  debounce as lodashDebounce,
++  isEqual as lodashIsEqual,
++  overEvery as lodashOverEvery
++} from 'lodash-es'
+
+export const random = (a, b) => {
+  return lodashRandom()
+}
+```
+
+Vite 会自动寻找根目录下 `index.html` 文件，以 `type` 为 `module` 的 `script` 为入口进行渲染，运行如下命令启动项目：
+
+```bash
+npm start
+```
+
+我们再次打开项目查看 network 面板，请求如下：
+
+![image-20211116215417375](/static/images/why-vite-is-so-fast/image8.png)
+
+可以看到已经没有之前的一百多个请求了，与 `lodash-es` 相关的只有 `lodash-es.js` 一个文件，我们回过头来再看下运行 `npm start` 之后命令行的输出：
+
+![image-20211116215317064](/static/images/why-vite-is-so-fast/image9.png)
+
+可以看到有一句提示是这样的：「**Pre-bundling dependencies: lodash-es**」，这个就是我们之前提到过的**预构建**，Vite Dev 在启动服务之前会扫描代码，将你使用到的 npm 包进行预构建，预构建结果都是以 ES modules 规范进行导出，并缓存在 `node_modules/.vite` 文件夹下：
+
+![image-20211116215759951](/static/images/why-vite-is-so-fast/image10.png)
+
+仅仅如此的话还不能让浏览器识别到预构建结果，Vite 还需要对源文件进行修改，修改如下：
+
+```diff
+- import {
+-  random as lodashRandom,
+-  get as lodashGet,
+-  debounce as lodashDebounce,
+-  isEqual as lodashIsEqual,
+-  overEvery as lodashOverEvery
+-} from 'lodash-es'
++ import {
++  random as lodashRandom,
++  get as lodashGet,
++  debounce as lodashDebounce,
++  isEqual as lodashIsEqual,
++  overEvery as lodashOverEvery
++} from '/node_modules/.vite/lodash-es.js?v=b2ff959c'
+
+export const random = (a, b) => {
+  return lodashRandom()
+}
+```
+
+这样的话浏览器就能够找到 Vite 预构建之后的结果，进而进行页面渲染。
+
+## Vite Dev 原理
+
+### 预构建
+
+在第一次运行项目之后，**只要没有安装新的依赖，并且项目代码中也没有引用新的依赖**，Vite 就不会进行预构建，直接启动服务，这会大大提高**冷启动**速度，热更新同理，只要没有依赖发生变化就会直接出发热更新，速度也能够达到毫秒级。
+
+综上，Vite 大大提升了二次冷启动以及热更新的速度，那么对于首次冷启动呢，上文讲到 Vite 会对代码进行扫描，对使用到的依赖进行预构建，那么预构建可能是一个比较耗费时间的过程。如果采用 webpack 或者 rollup 进行预构建的话，可能会拖慢首次冷启动的速度。那么 Vite 是如何解决这个问题的呢？Vite 引入了 `esbuild` 解决了这个问题。
+
+`esbuild` 是由 Figma CTO 使用 Go 语言进行编写，其官方表述为：「An extremely fast JavaScript bundler」，到底有多快呢？
+
+![image-20211116221558796](/static/images/why-vite-is-so-fast/image11.png)
+
+上述图片是 esbuild、webpack、rollup、parcel 对 three.js 进行打包构建耗费的时长，可以看到 esbuild 的构建时间**极短**。相比速度最快的 parcel 快了 98 倍。
+
+esbuild 是使用 Go 进行编写，其相对 JavaScript 来讲有很多优势，比如 Go 拥有天然的多线程能力，更高效的内存使用率，这也就意味着更高的运行性能。
+
+### Dev 流程
+
+与上文中的 webpack dev 流程相对应，webpack 是将所有的模块打包成 bundle 之后服务才可以启动，在项目变得越来越庞大的时候启动就会越来越慢。
+
+下图是 Vite dev 的流程概览，可见其是先启动 serve 服务，再根据对应路由的对应模块进行编译，编译是指对文件做相应的处理，比如把 `import { get } from 'lodash-es'` 转换为 `import { get } from '/node_modules/.vite/lodash-es.js'`，此流程再加上预构建就可以使项目的启动速度变得非常快。
+
+<img src="/static/images/why-vite-is-so-fast/image12.png" width="800" />
+
+## 实际项目测试
+
+下面就对一个实际项目进行 Vite 改造测试
+
+### 改造前
+
+首次冷启动的加载时间：
+
+![image-20211118080543310](/static/images/why-vite-is-so-fast/image13.png)
+
+第二次冷启动的加载时间：
+
+![image-20211118080651021](/static/images/why-vite-is-so-fast/image14.png)
+
+热更新时间：
+
+![image-20211118080719913](/static/images/why-vite-is-so-fast/image15.png)
+
+### 改造后
+
+首次冷启动时间：
+
+![image-20211118080118795](/static/images/why-vite-is-so-fast/image16.png)
+
+第二次冷启动的加载时间：
+
+![image-20211118080353181](/static/images/why-vite-is-so-fast/image17.png)
+
+热更新时间：（Vite 实际没有提示时间，观感上来看，保存即刷新，速度非常快）
+
+![image-20211118080213802](/static/images/why-vite-is-so-fast/image18.png)
+
+## 总结
+
+综上所述，Vite 通过 ESM 与预构建两种主要方法大大提高了本地开发的速度，目前来看 Vite 还比较年轻，其生态还需要进一步完善。虽然 webpack 比较笨重，配置起来比较繁琐，但是其能够实现日常项目开发的绝大多数需求，webpack 生态也是当前的 Vite 无法睥睨的。
+
+至于项目要不要升级 Vite，还是要看项目而定，如果 Vite 当前的功能以及生态能够满足你的需求，完全可以升级，这会极大地提高幸福感 🥰。如果不能用 Vite，升级至 webpack5 也是一个极佳的选择，其新增的通用缓存功能，能够大大提高项目冷启动速度。
