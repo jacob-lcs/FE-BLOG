@@ -7,7 +7,7 @@ specifiers:
   '@svgr/webpack': 6.2.1
   '@tailwindcss/forms': 0.4.1
   '@tailwindcss/typography': 0.5.4
-  autoprefixer: 10.4.5
+  autoprefixer: 10.4.7
   classnames: 2.3.1
   cross-env: 7.0.3
   dedent: 0.7.0
@@ -54,7 +54,7 @@ dependencies:
   '@mailchimp/mailchimp_marketing': 3.0.75
   '@tailwindcss/forms': 0.4.1_tailwindcss@3.1.6
   '@tailwindcss/typography': 0.5.4_tailwindcss@3.1.6
-  autoprefixer: 10.4.5_postcss@8.4.14
+  autoprefixer: 10.4.7_postcss@8.4.14
   classnames: 2.3.1
   esbuild: 0.13.15
   github-slugger: 1.4.0
@@ -2351,8 +2351,8 @@ packages:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
     dev: false
 
-  /autoprefixer/10.4.5_postcss@8.4.14:
-    resolution: {integrity: sha512-Fvd8yCoA7lNX/OUllvS+aS1I7WRBclGXsepbvT8ZaPgrH24rgXpZzF0/6Hh3ZEkwg+0AES/Osd196VZmYoEFtw==}
+  /autoprefixer/10.4.7_postcss@8.4.14:
+    resolution: {integrity: sha512-ypHju4Y2Oav95SipEcCcI5J7CGPuvz8oat7sUtYj3ClK44bldfvtvcxK6IEK++7rqB7YchDGzweZIBG+SD0ZAA==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
