@@ -58,6 +58,7 @@ module.exports = withBundleAnalyzer({
   eslint: {
     dirs: ['pages', 'components', 'lib', 'layouts', 'scripts'],
   },
+  swcMinify: true,
   async headers() {
     return [
       {
