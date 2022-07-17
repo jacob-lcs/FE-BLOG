@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@fontsource/inter': 4.5.2
+  '@fontsource/inter': 4.5.11
   '@mailchimp/mailchimp_marketing': 3.0.75
   '@next/bundle-analyzer': 12.2.2
   '@svgr/webpack': 6.2.1
@@ -50,7 +50,7 @@ specifiers:
   unist-util-visit: 4.1.0
 
 dependencies:
-  '@fontsource/inter': 4.5.2
+  '@fontsource/inter': 4.5.11
   '@mailchimp/mailchimp_marketing': 3.0.75
   '@tailwindcss/forms': 0.4.1_tailwindcss@3.1.6
   '@tailwindcss/typography': 0.5.4_tailwindcss@3.1.6
@@ -1446,8 +1446,8 @@ packages:
     resolution: {integrity: sha512-cEee/Z+I12mZcFJshKcCqC8tuX5hG3s+d+9nZ3LabqKF1vKdF41B92pJVCBggjAGORAeOzyyDDKrZwIkLffeOQ==}
     dev: false
 
-  /@fontsource/inter/4.5.2:
-    resolution: {integrity: sha512-4LLfZYr5dRsobtC9JNkATL5OwOqrxs2tF29eNljjogxWXm4tlHxRo4dgOFTlWxQOxcj5Zv7dM8IMiSoOqMGy3g==}
+  /@fontsource/inter/4.5.11:
+    resolution: {integrity: sha512-toizzQkfXL8YJcG/f8j3EYXYGQe4OxiDEItThSigvHU+cYNDw8HPp3wLYQX745hddsnHqOGCM4exitFSBOU8+w==}
     dev: false
 
   /@humanwhocodes/config-array/0.5.0:
