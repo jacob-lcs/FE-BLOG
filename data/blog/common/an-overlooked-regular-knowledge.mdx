@@ -1,0 +1,107 @@
+---
+title: '一个比较容易被忽略的正则问题'
+date: '2022-07-17'
+tags: ['JavaScript', '技术文章']
+draft: false
+summary: '同样的正则表达式，同样的字符串，为什么运行了四次，得到的结果却不尽相同呢？让我们一起来看下为什么会出现这种情况～'
+---
+
+## 前言
+
+在进入正文之前，先看下下面的代码
+
+```js
+const regex = /test/g
+const string = 'test123'
+for (let i = 0; i < 4; i++) {
+  console.log(regex.test(string))
+}
+```
+
+以上代码的输出结果是什么呢？
+
+![CleanShot 2022-07-17 at 12.34.55@2x.png](/static/images/an-overlooked-regular-knowledge/image5.png)
+
+乍一眼看上去会比较奇怪，同样的正则表达式，同样的字符串，为什么运行了四次，得到的结果却不尽相同呢？这就引出了我们下面要讲的一个属性：**RegExp.lastIndex**
+
+## **RegExp.lastIndex**
+
+正则表达式对象都会有 `lastIndex` 属性值，用来指定下一次匹配的起始索引，并且仅在使用了 `g` 或 `y` 时生效。
+
+> 💡 `g`：global，匹配所有可匹配结果
+
+> `y`：仅从目标字符串中该正则表达式的 `lastIndex` 属性所指定的索引进行匹配。不会从任何后面的索引中匹配。
+
+我们都知道使用正则表达式的 `test` 方法可以校验字符串是否符合我们提供的正则表达式，`test` 除了这个作用之外还会更新其 `lastIndex` 属性，并且下一次匹配会从该 `lastIndex` 开始，匹配失败会将 `lastIndex` 赋值为 0。
+
+以上面的 `test123` 字符串举例，可以看下面的图示
+
+![正则表达式_LastIndex.jpg](/static/images/an-overlooked-regular-knowledge/image1.jpg)
+
+为什么第一次匹配为 true，第二次就是 false 了呢？其实是因为在刚创建正则表达式时，`lastIndex` 为 0，所以就是从字符串开头进行匹配，匹配成功后 lastIIndex 被置为 4，也就是 `test123` 中 `1` 的 index。
+
+然后 for 循环继续第二次匹配，由于 `1` 之后没有符合正则表达式 `/test/g` 的字符串，所以匹配结果为 false，lastIndex 被置为 0。后面继续循环的话 lastIndex 会从 0 变成 4，再从 4 变成 0，周而复始，呈现出 **true → false → true → false → …** 的结果。
+
+我们简单修改代码来验证下
+
+```js
+const regex = /test/g
+const string = 'test123'
+for (let i = 0; i < 4; i++) {
+  console.log(regex.test(string), regex.lastIndex)
+}
+```
+
+输出结果如下：
+
+![Untitled 1.png](/static/images/an-overlooked-regular-knowledge/image2.png)
+
+## 如何解决？
+
+### 方案一
+
+既然是由于正则对象中的 lastIndex 值导致的结果不符合期望，那我们能不能将正则表达式放入循环中呢，每次匹配都是使用的全新的正则表达式对象，自然就不会存在 lastIndex 的问题了。
+
+```js
+const string = 'test123'
+for (let i = 0; i < 4; i++) {
+  const regex = /test/g
+  console.log(regex.test(string), regex.lastIndex)
+}
+```
+
+输出结果如下：
+
+![Untitled 2.png](/static/images/an-overlooked-regular-knowledge/image3.png)
+
+### 方案二
+
+在提出第二种方案之前我们先看下 lastIndex 的属性
+
+| writable     | true  |
+| ------------ | ----- |
+| enumerable   | false |
+| configurable | false |
+
+由上面的表格我们能够看到 lastIndex 的 writable 属性为 true，这就证明其是可赋值的，那我们能不能在每次循环中将 lastIndex 重置为 0 来解决问题呢？
+
+```js
+const regex = /test/g
+const string = 'test123'
+for (let i = 0; i < 4; i++) {
+  console.log(regex.test(string), regex.lastIndex)
+  regex.lastIndex = 0
+}
+```
+
+执行结果如下：
+
+![Untitled 3.png](/static/images/an-overlooked-regular-knowledge/image4.png)
+
+可以看到这样也是可以解决问题的。
+
+## 推荐
+
+最后给大家推荐一个正则表达式校验网站
+
+[regex101: build, test, and debug regex](https://regex101.com/)
