@@ -22,7 +22,7 @@ specifiers:
   gray-matter: 4.0.3
   husky: 8.0.1
   image-size: 1.0.2
-  inquirer: 9.0.1
+  inquirer: 9.0.2
   lint-staged: 13.0.3
   mdx-bundler: 9.0.1
   next: 12.2.3
@@ -92,7 +92,7 @@ devDependencies:
   file-loader: 6.2.0_webpack@5.73.0
   globby: 11.1.0
   husky: 8.0.1
-  inquirer: 9.0.1
+  inquirer: 9.0.2
   lint-staged: 13.0.3
   next-remote-watch: 1.0.0
   prettier: 2.7.1
@@ -4529,8 +4529,8 @@ packages:
     resolution: {integrity: sha512-7NXolsK4CAS5+xvdj5OMMbI962hU/wvwoxk+LWR9Ek9bVtyuuYScDN6eS0rUm6TxApFpw7CX1o4uJzcd4AyD3Q==}
     dev: false
 
-  /inquirer/9.0.1:
-    resolution: {integrity: sha512-NO601wvGO4Zm25ctJUhuglRBShQKJSGKGQlgbeyjs3cvXqq4Ud1jhwR36zf3pTC9mmfH3uHJHb/sL3/YJPqMzw==}
+  /inquirer/9.0.2:
+    resolution: {integrity: sha512-AqmDHmz3bIe573OiM4svTZzajBzff1xpuzYAimW8gjzW5ncuPllWB8t/GKl+NSuKRJaKyIF2bU2RCx8H1dwqyQ==}
     engines: {node: '>=12.0.0'}
     dependencies:
       ansi-escapes: 5.0.0
