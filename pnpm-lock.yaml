@@ -46,14 +46,14 @@ specifiers:
   sharp: 0.30.7
   socket.io: 4.5.1
   socket.io-client: 4.5.1
-  tailwindcss: 3.1.6
+  tailwindcss: 3.1.7
   unist-util-visit: 4.1.0
 
 dependencies:
   '@fontsource/inter': 4.5.11
   '@mailchimp/mailchimp_marketing': 3.0.75
-  '@tailwindcss/forms': 0.5.2_tailwindcss@3.1.6
-  '@tailwindcss/typography': 0.5.4_tailwindcss@3.1.6
+  '@tailwindcss/forms': 0.5.2_tailwindcss@3.1.7
+  '@tailwindcss/typography': 0.5.4_tailwindcss@3.1.7
   autoprefixer: 10.4.7_postcss@8.4.14
   classnames: 2.3.1
   esbuild: 0.14.49
@@ -77,7 +77,7 @@ dependencies:
   remark-gfm: 3.0.1
   remark-math: 5.1.1
   sharp: 0.30.7
-  tailwindcss: 3.1.6
+  tailwindcss: 3.1.7
   unist-util-visit: 4.1.0
 
 devDependencies:
@@ -1868,16 +1868,16 @@ packages:
       tslib: 2.4.0
     dev: false
 
-  /@tailwindcss/forms/0.5.2_tailwindcss@3.1.6:
+  /@tailwindcss/forms/0.5.2_tailwindcss@3.1.7:
     resolution: {integrity: sha512-pSrFeJB6Bg1Mrg9CdQW3+hqZXAKsBrSG9MAfFLKy1pVA4Mb4W7C0k7mEhlmS2Dfo/otxrQOET7NJiJ9RrS563w==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || >= 3.0.0-alpha.1'
     dependencies:
       mini-svg-data-uri: 1.4.4
-      tailwindcss: 3.1.6
+      tailwindcss: 3.1.7
     dev: false
 
-  /@tailwindcss/typography/0.5.4_tailwindcss@3.1.6:
+  /@tailwindcss/typography/0.5.4_tailwindcss@3.1.7:
     resolution: {integrity: sha512-QEdg40EmGvE7kKoDei8zr5sf4D1pIayHj4R31bH3lX8x2BtTiR+jNejYPOkhbmy3DXgkMF9jC8xqNiGFAuL9Sg==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders'
@@ -1885,7 +1885,7 @@ packages:
       lodash.castarray: 4.4.0
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
-      tailwindcss: 3.1.6
+      tailwindcss: 3.1.7
     dev: false
 
   /@trysound/sax/0.2.0:
@@ -7435,8 +7435,8 @@ packages:
       - encoding
     dev: false
 
-  /tailwindcss/3.1.6:
-    resolution: {integrity: sha512-7skAOY56erZAFQssT1xkpk+kWt2NrO45kORlxFPXUt3CiGsVPhH1smuH5XoDH6sGPXLyBv+zgCKA2HWBsgCytg==}
+  /tailwindcss/3.1.7:
+    resolution: {integrity: sha512-r7mgumZ3k0InfVPpGWcX8X/Ut4xBfv+1O/+C73ar/m01LxGVzWvPxF/w6xIUPEztrCoz7axfx0SMdh8FH8ZvRQ==}
     engines: {node: '>=12.13.0'}
     hasBin: true
     dependencies:
