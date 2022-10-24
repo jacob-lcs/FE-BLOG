@@ -1,0 +1,313 @@
+---
+title: '由一个奇怪的问题引发的思考：Vite 的 HMR 是怎么做的？🤔'
+date: '2022-10-24'
+tags: ['React', 'JavaScript', 'Vite', '技术文章']
+draft: false
+summary: 'HMR 是提升开发效率的利器，但是有两段几乎相同的代码 HMR 竟然有一个不生效？仔细研究 Vite 源码后发现原来是不遵守规范惹的祸......'
+---
+
+💡 本文分析基于 `Vite` v3.1.8 版本，不同的版本可能会存在差异
+
+## 前言
+
+`HMR` 的全称是 Hot Module Replacement，在没有 `HMR` 之前我们改动一行代码都需要全局刷新，简单的页面还好，一旦遇到复杂的页面，里面伴随着复杂的网络请求，更难受的是如果你要调试的 UI 需要在页面上进行交互之后才会出现。这就导致你每次改动代码必然要刷新页面，然后进行至少一次页面交互才能看到自己改动的效果。
+
+`HMR` 的意义就在于，不刷新页面的前提下按需渲染发生改动的组件，这就能极大地提高我们的开发效果，所以这个功能在我们日常开发中非常广泛。
+
+话说回来，我们为什么要了解 HMR 原理呢，用着没毛病不就好了嘛，问题就出在有毛病的时候 🤣。大家可以看下面的代码：
+
+- `ButtonDemoList1.jsx`
+
+  ```jsx
+  // ButtonDemoList1.jsx
+  export const ButtonDemoList1 = () => {
+    return [
+      {
+        render: () => {
+          return <div>我是一个测试按钮11</div>
+        },
+      },
+    ]
+  }
+  ```
+
+- `buttonDemoList2.jsx`
+
+  ```jsx
+  // buttonDemoList2.jsx
+  export const buttonDemoList2 = () => {
+    return [
+      {
+        render: () => {
+          return <div>我是一个测试按钮22</div>
+        },
+      },
+    ]
+  }
+  ```
+
+- `App.jsx`
+
+  ```jsx
+  // App.jsx
+  import { ButtonDemoList1 } from './components/ButtonDemoList1'
+  import { buttonDemoList2 } from './components/buttonDemoList2'
+  const ButtonWrapper = (props) => {
+    const { comp = [] } = props
+    return comp.map((c) => c.render())
+  }
+  function App() {
+    return (
+      <div className="App">
+        <ButtonWrapper comp={ButtonDemoList1()} />
+        <ButtonWrapper comp={buttonDemoList2()} />
+      </div>
+    )
+  }
+  ```
+
+上述三部分代码分别表示三个文件，我们希望改动 `ButtonDemoList1.jsx` 或者 `buttonDemoList2.jsx` 后项目能够正常热更新，但事实并非如此… 🤪
+
+![Untitled.gif](http://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/376bcca0b1ac4821930f523ec0e364a9~tplv-k3u1fbpfcp-watermark.image?)
+
+通过录屏可以看到，当我改动 `ButtonDemoList1` 的时候项目不能正常热更新，但是改动 `buttonDemoList2` 的时候项目却可以热更新，这两个文件的代码整体来说非常相似，那为什么会导致有这样的差异呢？
+
+这就是这篇文章需要解答的问题。
+
+## Vite 是怎么实现热更新的
+
+### 总览
+
+根据 Vite 源码整理出了一个大致流程，总体就是 Vite Server 监听到文件变化，通过 `WebSocket` 向 Vite Client 发送通知，Client 根据通知内容解析，发起 HTTP 请求获取更新后的文件，最后局部更新页面。
+
+![](/static/images/vite-hmr/image1.png)
+
+话说回来，Vite Server 和 Vite Client 是指什么呢？
+
+我们可以先看下 Vite 代码的目录结构：
+
+```jsx
+src
+├── client
+│   └── ...
+└── node
+    └── ...
+```
+
+总体分为 client 和 node 两个目录结构，开发时我们是通过 `vite dev` 启动项目的，这里其实就是启动了一个 node 服务，其与 HMR 相关的功能主要有两个：
+
+1. 监听项目文件变化
+2. 启动 WebSocket 服务，向客户端主动推送消息
+
+另外一个就是 Vite Client，比如项目中有入口 `index.html` 文件，在实际请求时返回的 html 内容与实际在项目中写的并不相同：
+
+```html
+<script type="module" src="/@vite/client"></script>
+```
+
+Vite 通过这种方式向我们的代码中注入 Vite Client，其与 HMR 相关的功能主要有两个：
+
+1. 监听 `WebSocket` 消息，解析后发起文件请求
+2. 执行 `import.meta.hot` 中定义的钩子函数
+
+### Server 怎么知道应该向 Client 发送哪个文件呢？
+
+我们先来观察这两段代码
+
+```jsx
+// a.jsx
+import { random } from '../utils/b'
+export function ContextButton() {
+  return <button id="context-button">{random()}</button>
+}
+```
+
+```jsx
+// b.js
+export const random = () => {
+  return Math.random() + 1223
+}
+```
+
+改动上面两个代码都是可以触发热更新的，上面讲到 Vite 是通过 WebSocket 发送消息给 Client 表明应该更新哪些文件，我们先看下改动这两段代码发送的消息分别是什么。
+
+- 改动 `a.js`x
+
+  ```json
+  {
+    "type": "update",
+    "updates": [
+      {
+        "type": "js-update",
+        "timestamp": 1666362566132,
+        "path": "/context/a.jsx",
+        "explicitImportRequired": false,
+        "acceptedPath": "/context/a.jsx"
+      }
+    ]
+  }
+  ```
+
+- 改动 `b.js`
+
+  ```json
+  {
+    "type": "update",
+    "updates": [
+      {
+        "type": "js-update",
+        "timestamp": 1666362526781,
+        "path": "/context/a.jsx",
+        "explicitImportRequired": false,
+        "acceptedPath": "/context/a.jsx"
+      }
+    ]
+  }
+  ```
+
+其实能够观察到除了 timestamp 之外，改动 `a.jsx` 和 `b.js` 发送 WebSocket 消息其实是完全相同的，并不是改动哪个文件就向 Client 发送哪个文件。那么 Vite 是根据什么来判定的呢？
+
+这里涉及到「模块边界」的定义，[Vite 文档](https://cn.vitejs.dev/guide/api-hmr.html)中是这样解释的：
+
+> “接受” 热更新的模块被认为是  **HMR 边界；从边界模块向上的导入者将不会收到更新。**
+
+按照这个定义我们再看下浏览器获取到的 `a.jsx` 和 `b.js`，代码略多，这里就用图片代替
+
+`a.jsx`
+![Untitled.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/75fa83fe28644b29abd740c35f4f79bd~tplv-k3u1fbpfcp-watermark.image?)
+
+`b.js`
+![Untitled 1.png](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7b47e18622104a3496180a20120cadce~tplv-k3u1fbpfcp-watermark.image?)
+
+可以看到 `a.jsx` 中注册了 `import.meta.hot.accept` 事件，`b.js` 却没有，因为 a 引用了 b，在 b 没有 `accept` 的情况下，Vite 就会向上查找，a 定义了 `accept`，所以改动 a 或者 b 之后 Client 接收到的需要热更新的文件都是 `a.jsx`。
+
+现在问题就在于为什么 `a.jsx` 有 `import.meta.hot.accept`，`b.js` 却没有。
+
+### import.meta.hot.accept
+
+> 要接收模块自身，应使用  `import.meta.hot.accept`，参数为接收已更新模块的回调函数
+
+```jsx
+if (import.meta.hot) {
+  import.meta.hot.accept((newModule) => {
+    if (newModule) { ... }
+  })
+}
+```
+
+Vite 项目中 React 的 HMR 是 `@vitejs/plugin-react` 插件来做的，如果我们把它去掉会发生什么呢？
+
+```diff
+const config: UserConfig = {
+  mode: 'development',
+- plugins: [react()],
+  build: {
+    // to make tests faster
+    minify: false
+  }
+}
+```
+
+重新启动项目之后项目仍然能正常展示，但是 HMR 功能失效了，改动代码后必须通过全局刷新，效果如下：
+
+![Untitled 1.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cbd92fbb3f6b41de8aeb7a305b90bf7e~tplv-k3u1fbpfcp-watermark.image?)
+
+可以看到在修改代码之后，右侧浏览器中的 **count is: 8** 变成了 **count is: 0**，这说明页面重新刷新，没有保留之前的状态。实际请求文件发现，请求到的 jsx 代码中均不包含 `import.hot.accept` 逻辑，所以 Vite 并不知道如何进行热更新，只能全局刷新页面。
+
+既然这样我们又回到之前的问题，为什么 `@vitejs/plugin-react` 只给 `a.jsx` 加 `import.meta.hot.accept`，`b.js` 却没有？
+
+在 `@vitejs/plugin-react` 中有这么一段源代码可以说明这个问题
+
+```jsx
+if (!skipFastRefresh && !ssr && !isNodeModules) {
+  // Modules with .js or .ts extension must import React.
+  const isReactModule = isJSX || importReactRE.test(code)
+  if (isReactModule && filter(id)) {
+    useFastRefresh = true
+    plugins.push([await loadPlugin('react-refresh/babel'), { skipEnvCheck: true }])
+  }
+}
+```
+
+只有当文件名称为 `.jsx` 或者 `.tsx`，或者代码中含有 `import React from 'react'` 时，才会在转换代码时使用 `react-refresh/babel` 插件，这就是为什么 `b.js` 没有注入对应代码，因为它既不是 jsx 文件，也不包含 React 代码的注入。
+
+### 浏览器端执行热更新逻辑
+
+这个步骤也就是上述时序图中执行 `import.meta.hot.accept` 逻辑，这部分代码由 `react-refresh.babel` 负责注入，代码入下：
+
+```jsx
+import.meta.hot.accept((mod) => {
+  if (isReactRefreshBoundary(mod)) {
+    if (!window.__vite_plugin_react_timeout) {
+      window.__vite_plugin_react_timeout = setTimeout(() => {
+        window.__vite_plugin_react_timeout = 0
+        RefreshRuntime.performReactRefresh()
+      }, 30)
+    }
+  } else {
+    import.meta.hot.invalidate()
+  }
+})
+```
+
+## 所以到底发生了啥？
+
+还是回到前言中提到的问题，为什么同样的代码，仅仅是函数名称不同，却导致 HMR 不生效呢？
+
+> 只有当文件名称为 `.jsx` 或者 `.tsx`，或者代码中含有 `import React from 'react'` 时，才会在转换代码时使用 `react-refresh/babel` 插件
+
+上面是我们得到的一个结论，我们的文件名称 `ButtonDemoList1.jsx` 和 `buttonDemoList2.jsx` 和明显是符合这个条件的，那么问题可能就出在 `react-refresh/babel` 插件里了。
+
+在阅读代码之后发现代码里有这么一段逻辑：
+
+```jsx
+function isComponentishName(name) {
+  return typeof name === 'string' && name[0] >= 'A' && name[0] <= 'Z'
+}
+```
+
+对于函数声明，`react-refresh/babel` 是使用 `isComponentishName` 来判断该函数是不是 React 组件的，问题就出在我们的组件写法上：
+
+```jsx
+import React from 'react'
+
+export const buttonDemoList2 = () => {
+  return [
+    {
+      render: () => {
+        return <div>我是一个测试按钮2222改动33</div>
+      },
+    },
+  ]
+}
+```
+
+```jsx
+import React from 'react'
+
+export const ButtonDemoList1 = () => {
+  return [
+    {
+      render: () => {
+        return <div>我是一个测试按钮1111改动1122</div>
+      },
+    },
+  ]
+}
+```
+
+严格来说 `ButtonDemoList1` 并不算是一个 react 函数式组件，它返回的是一个数组，数组中每一项的 render 才是一个函数式组件，所以我们不应该将其命名为大驼峰，将其改成 `buttonDemoList1` 之后即可解决问题。
+
+![Untitled 2.gif](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/61562010232a40bfb0ac06519c8587a1~tplv-k3u1fbpfcp-watermark.image?)
+
+## 总结
+
+其实这个问题的根本原本还是写代码没有遵循 React 规范，在 [React 官方文档](https://reactjs.org/docs/jsx-in-depth.html#user-defined-components-must-be-capitalized)中有对应说明，所以大家在写代码的时候还是要遵循规范
+
+![Untitled 2.png](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/07e94eddd0d348e9a1f97e48bb4029ba~tplv-k3u1fbpfcp-watermark.image?)
+
+## 相关资料
+
+- 文中作为示例讲解的 HMR Demo 托管在 Github，仓库地址：https://github.com/jacob-lcs/hmr-demo
+- [Vite 官方文档](https://cn.vitejs.dev/guide/api-hmr.html)
+- [Vite HMR 过程概述](https://juejin.cn/post/7096103959563075597)
