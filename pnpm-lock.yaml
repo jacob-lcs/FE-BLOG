@@ -5,8 +5,8 @@ dependencies:
     specifier: 4.5.11
     version: 4.5.11
   '@mailchimp/mailchimp_marketing':
-    specifier: 3.0.75
-    version: 3.0.75
+    specifier: 3.0.80
+    version: 3.0.80
   '@tailwindcss/forms':
     specifier: 0.5.2
     version: 0.5.2(tailwindcss@3.1.7)
@@ -1584,8 +1584,8 @@ packages:
       '@jridgewell/resolve-uri': 3.1.0
       '@jridgewell/sourcemap-codec': 1.4.14
 
-  /@mailchimp/mailchimp_marketing@3.0.75:
-    resolution: {integrity: sha512-UWg3zHd1XMIbXEWlhZpuJiUi1jQ5z3MumJwa5RKjf9/iKboz39X8v4Goq4isi2/mFf07dgftkt/zOSChY32eqg==}
+  /@mailchimp/mailchimp_marketing@3.0.80:
+    resolution: {integrity: sha512-Cgz0xPb+1DUjmrl5whAsmqfAChBko+Wf4/PLQE4RvwfPlcq2agfHr1QFiXEhZ8e+GQwQ3hZQn9iLGXwIXwxUCg==}
     engines: {node: '>=10.0.0'}
     dependencies:
       dotenv: 8.6.0
