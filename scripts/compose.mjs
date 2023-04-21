@@ -1,7 +1,7 @@
-const fs = require('fs')
-const path = require('path')
-const inquirer = require('inquirer')
-const dedent = require('dedent')
+import fs from 'fs'
+import path from 'path'
+import inquirer from 'inquirer'
+import dedent from 'dedent'
 
 const root = process.cwd()
 
