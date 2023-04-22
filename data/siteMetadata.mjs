@@ -15,16 +15,6 @@ const siteMetadata = {
   yuque: 'https://www.yuque.com/jacob.lcs',
   juejin: 'https://juejin.cn/user/254742428913885',
   locale: 'zh-CN',
-  analytics: {
-    // If you want to use an analytics provider you have to add it to the
-    // content security policy in the `next.config.js` file.
-    // supports plausible, simpleAnalytics, umami or googleAnalytics
-    plausibleDataDomain: 'lcs.show', // e.g. tailwind-nextjs-starter-blog.vercel.app
-    simpleAnalytics: false, // true or false
-    umamiWebsiteId: '', // e.g. 123e4567-e89b-12d3-a456-426614174000
-    googleAnalyticsId: '', // e.g. UA-000000-2 or G-XXXXXXX
-    BaiduAnalyticsId: '432c03f2c589f1ab40d1b3d7a3b511f3',
-  },
   comment: {
     // If you want to use a commenting system other than giscus you have to add it to the
     // content security policy in the `next.config.js` file.

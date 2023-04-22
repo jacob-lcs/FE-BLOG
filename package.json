@@ -15,6 +15,7 @@
     "@mailchimp/mailchimp_marketing": "3.0.80",
     "@tailwindcss/forms": "0.5.3",
     "@tailwindcss/typography": "0.5.9",
+    "@vercel/analytics": "^1.0.0",
     "autoprefixer": "10.4.14",
     "classnames": "2.3.2",
     "esbuild": "0.17.17",

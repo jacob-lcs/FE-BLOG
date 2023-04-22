@@ -7,9 +7,10 @@ import '@fontsource/inter/variable-full.css'
 
 import { ThemeProvider } from 'next-themes'
 import Head from 'next/head'
+import { Analytics } from '@vercel/analytics/react'
 
 import siteMetadata from '@/data/siteMetadata'
-import Analytics from '@/components/analytics'
+// import Analytics from '@/components/analytics'
 import LayoutWrapper from '@/components/LayoutWrapper'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
