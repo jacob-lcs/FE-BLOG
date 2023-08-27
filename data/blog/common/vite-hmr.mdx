@@ -68,7 +68,7 @@ summary: 'HMR 是提升开发效率的利器，但是有两段几乎相同的代
 
 上述三部分代码分别表示三个文件，我们希望改动 `ButtonDemoList1.jsx` 或者 `buttonDemoList2.jsx` 后项目能够正常热更新，但事实并非如此… 🤪
 
-![Untitled.gif](http://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/376bcca0b1ac4821930f523ec0e364a9~tplv-k3u1fbpfcp-watermark.image?)
+![](/static/images/vite-hmr/image2.gif)
 
 通过录屏可以看到，当我改动 `ButtonDemoList1` 的时候项目不能正常热更新，但是改动 `buttonDemoList2` 的时候项目却可以热更新，这两个文件的代码整体来说非常相似，那为什么会导致有这样的差异呢？
 
@@ -174,10 +174,10 @@ export const random = () => {
 按照这个定义我们再看下浏览器获取到的 `a.jsx` 和 `b.js`，代码略多，这里就用图片代替
 
 `a.jsx`
-![Untitled.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/75fa83fe28644b29abd740c35f4f79bd~tplv-k3u1fbpfcp-watermark.image?)
+![Untitled.png](/static/images/vite-hmr/image3.png)
 
 `b.js`
-![Untitled 1.png](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7b47e18622104a3496180a20120cadce~tplv-k3u1fbpfcp-watermark.image?)
+![Untitled 1.png](/static/images/vite-hmr/image4.png)
 
 可以看到 `a.jsx` 中注册了 `import.meta.hot.accept` 事件，`b.js` 却没有，因为 a 引用了 b，在 b 没有 `accept` 的情况下，Vite 就会向上查找，a 定义了 `accept`，所以改动 a 或者 b 之后 Client 接收到的需要热更新的文件都是 `a.jsx`。
 
@@ -210,7 +210,7 @@ const config: UserConfig = {
 
 重新启动项目之后项目仍然能正常展示，但是 HMR 功能失效了，改动代码后必须通过全局刷新，效果如下：
 
-![Untitled 1.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cbd92fbb3f6b41de8aeb7a305b90bf7e~tplv-k3u1fbpfcp-watermark.image?)
+![Untitled 1.gif](/static/images/vite-hmr/image5.gif)
 
 可以看到在修改代码之后，右侧浏览器中的 **count is: 8** 变成了 **count is: 0**，这说明页面重新刷新，没有保留之前的状态。实际请求文件发现，请求到的 jsx 代码中均不包含 `import.hot.accept` 逻辑，所以 Vite 并不知道如何进行热更新，只能全局刷新页面。
 
@@ -298,13 +298,13 @@ export const ButtonDemoList1 = () => {
 
 严格来说 `ButtonDemoList1` 并不算是一个 react 函数式组件，它返回的是一个数组，数组中每一项的 render 才是一个函数式组件，所以我们不应该将其命名为大驼峰，将其改成 `buttonDemoList1` 之后即可解决问题。
 
-![Untitled 2.gif](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/61562010232a40bfb0ac06519c8587a1~tplv-k3u1fbpfcp-watermark.image?)
+![Untitled 2.gif](/static/images/vite-hmr/image6.gif)
 
 ## 总结
 
 其实这个问题的根本原本还是写代码没有遵循 React 规范，在 [React 官方文档](https://reactjs.org/docs/jsx-in-depth.html#user-defined-components-must-be-capitalized)中有对应说明，所以大家在写代码的时候还是要遵循规范
 
-![Untitled 2.png](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/07e94eddd0d348e9a1f97e48bb4029ba~tplv-k3u1fbpfcp-watermark.image?)
+![Untitled 2.png](/static/images/vite-hmr/image7.png)
 
 ## 相关资料
 
