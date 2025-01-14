@@ -1,0 +1,244 @@
+---
+title: '简单又好用的 Zustand V5 是如何实现的'
+date: '2025-01-15'
+tags: ['Zustand', 'JavaScript', 'React', '技术文章']
+draft: false
+summary: '`Zustand` 是一个轻量且高性能的 React 状态管理工具，依赖简单的 Hook 与订阅机制来管理与更新状态，不必像 Redux 那样需要定义复杂的 `actions` 和 `reducers`，也不需要像 `MobX` 一样引入可观察对象或装饰器，因此可以用最少的样板代码快速上手，并在仅有必要时触发组件重新渲染。'
+---
+
+# 简单又好用的 Zustand V5 是如何实现的
+
+所有者: Jacob Liu
+标签: JavaScript, React
+
+## 前言
+
+`Zustand` 是一个轻量且高性能的 React 状态管理工具，依赖简单的 Hook 与订阅机制来管理与更新状态，不必像 Redux 那样需要定义复杂的 `actions` 和 `reducers`，也不需要像 `MobX` 一样引入可观察对象或装饰器，因此可以用最少的样板代码快速上手，并在仅有必要时触发组件重新渲染。它灵活支持各种中间件和持久化方案，能够满足大部分项目的需求，同时保持了极简的用法和可观的性能优势。
+
+恰逢最近 Zustand 发布的了大版本更新，最大的变化是不再支持 React 18 以下的版本。这使得 Zustand 能够移除  **`use-sync-external-store`**  包，现在 Zustand 使用原生的  **`useSyncExternalStore`** ，这使得包的大小大大减小。
+
+这篇文章就来介绍下 Zustand V5 这个大版本内部的实现原理，希望能够对你有所帮助。
+
+## 核心概念和基础用法
+
+本章节通过一个简单的例子来演示在实际项目中如何使用 `zustand`，并且用 [`react-scan`](https://react-scan.com/) 来验证其按需更新的特性。
+
+### 创建 Store
+
+为了演示局部更新的特性，我们在一个 store 中创建两个 `count` 变量，并分别为其实现一个 `inc` 方法：
+
+```jsx
+import { create } from 'zustand'
+
+type Store = {
+  count1: number
+  count2: number
+  inc1: () => void
+  inc2: () => void
+}
+
+const useStore = create<Store>((set) => ({
+  count1: 0,
+  count2: 0,
+  inc1: () => set((state) => ({ count1: state.count1 + 1 })),
+  inc2: () => set((state) => ({ count2: state.count2 + 1 })),
+}))
+```
+
+### 获取/更新 State
+
+store 创建完成后可直接使用 `useStore` 方法获取 store 中的属性，在这里我们直接获取上面定义的 `count` 变量和 `inc` 方法，在 React 中直接使用 `count` 变量做页面渲染，`inc` 则可以直接更新 `count`，并将变化同步到页面上。
+
+```jsx
+const Counter1 = () => {
+  const count = useStore((s) => s.count1)
+  const inc = useStore((s) => s.inc1)
+
+  return (
+    <>
+      <span className="text-3xl">{count}</span>
+      <button className="bg-[#252b37] font-bold py-2 px-4 rounded" onClick={inc}>
+        +1
+      </button>
+    </>
+  )
+}
+```
+
+### Selector 与订阅
+
+前面可以看到，我们并没有返回 store 中的全部数据，而是单独引入的 count 和 inc，这种写法可以实现局部更新的效果，即 count1 数据更新，并不会导致引用 count2 数据的页面重新渲染，反之亦然。
+
+我们使用 react-scan 来验证下实际表现：
+
+[Screen-2025-01-02-222122(1).mp4](</public/static/videos/Screen-2025-01-02-222122(1).mp4>)
+
+从录屏中可以看到，点击 count 1 区域的 +1 按钮，只有 count 1 的数字区域重新渲染，count 2 区域也是相同表现，这样能够说明 Zustand 按需更新的特性。
+
+## 实现原理
+
+### store 是如何创建和管理的
+
+在 React 18 中，React 团队引入了一个新的 Hook —— `useSyncExternalStore`，主要用于订阅并读取来自外部数据源（“外部存储”）的状态，例如全局单例、第三方状态管理库或自定义的事件系统等。
+
+而 Zustand V5 的核心函数就是基于 `useSyncExternalStore` 实现的，在使用该 Hook 时，需要提供三个核心参数：
+
+1. **subscribe**：用来订阅外部存储变化的函数，一般会返回一个用于取消订阅的函数。
+2. **getSnapshot**：用于获取当前外部存储快照（最新数据）的函数。
+3. **getServerSnapshot**（可选）：在 SSR 时使用，用于在服务器端获取快照。
+
+在调用 Zustand 的 create 函数之后会返回 useStore hook，在调用 useStore 获取 store 中的某些数据其实就是调用 `useSyncExternalStore` 的过程。
+
+```jsx
+// zustand/src/react.ts
+export function useStore<TState, StateSlice>(
+  api: ReadonlyStoreApi<TState>,
+  selector: (state: TState) => StateSlice = identity as any,
+) {
+  const slice = React.useSyncExternalStore(
+    api.subscribe,
+    () => selector(api.getState()),
+    () => selector(api.getInitialState()),
+  )
+  React.useDebugValue(slice)
+  return slice
+}
+```
+
+这其中包含几个关键方法：
+
+1. `api.subscribe`：订阅函数，该函数会接收一个 onChange 参数，在 store 发生变化时，就会调用 onChange 函数通知 React 重新渲染页面
+2. `selector`：在 `useStore((s) => s.count1)` 中 `(s) => s.count1` 就是 selector，用于过滤出用户需要的数据
+3. `api.getState`：获取 store 中的最新数据
+4. `api.getInitialState`：获取 store 中的初始化数据
+
+如此一来，便可使 React 能够监听 store 这一「外部数据」的变化。
+
+### useStore 的 Hook 流程
+
+既然我们可以注册 store，React 又可以监听 store 的变化，那如何保证组件只在需要的状态变更时才重新渲染呢？其核心实现其实是在 React 的 useSyncExternalStore 中。
+
+前面提到，`api.subscribe` 会接收一个 onChange 函数，在 store 发生变化时调用，那我们不妨看下 React 注入的 onChange 函数的实现，核心代码如下：
+
+```jsx
+function subscribeToStore(fiber, inst, subscribe) {
+  // 注入到 api.subscribe 中的 onChange 回调函数
+  var handleStoreChange = function () {
+    if (checkIfSnapshotChanged(inst)) {
+      forceStoreRerender(fiber)
+    }
+  }
+  return subscribe(handleStoreChange)
+}
+// 检查订阅的数据是否有变更
+function checkIfSnapshotChanged(inst) {
+  var latestGetSnapshot = inst.getSnapshot
+  var prevValue = inst.value
+  try {
+    var nextValue = latestGetSnapshot()
+    return !objectIs(prevValue, nextValue)
+  } catch (error2) {
+    return true
+  }
+}
+```
+
+这个流程其实比较简单，handleStoreChange 函数触发之后，会调用 `getSnapshot` 方法，与之前的数据进行比较，若相等则跳过更新，不相等则触发更新。需要注意的是，React 内部是使用 `Object.is` 进行比较，不是理想中的浅比较或深比较，所以你使用 Zustand 写如下代码会引发无限循环报错。
+
+```jsx
+const count = useStore((s) => ({
+  count1: s.count1,
+  count2: s.count2,
+}))
+```
+
+这是因为 selector 每次都会返回一个新的对象，用 `Object.is` 比较始终会返回 false。好在 Zustand 提供了一个解决方案：`useShallow`。这个 hook 允许你在 store 中直接获取对象，使用方法如下：
+
+```jsx
+const count = useStore(
+  useShallow((s) => ({
+    count1: s.count1,
+    count2: s.count2,
+  }))
+)
+```
+
+其内部实现是在获取数据时与老数据做浅比较，若相等，则直接返回老数据，这样在 React 看来前后数据就没有发生变更，就不会引发无限重渲染，其源码如下：
+
+```jsx
+export function useShallow<S, U>(selector: (state: S) => U): (state: S) => U {
+  const prev = React.useRef<U>()
+  return (state) => {
+    const next = selector(state)
+    // 在 shallow 中实现了浅比较
+    return shallow(prev.current, next)
+      ? (prev.current as U)
+      : (prev.current = next)
+  }
+}
+```
+
+### 中间件的实现方式
+
+以 `persist` 持久化存储插件为例，介绍 Zustand 中中间件的实现原理。在使用 create 创建 store 时，`create` 总共提供了三个参数：
+
+1. `set`：用于创建自定义函数，以更新 store
+2. `get`：获取 store 中的值
+3. `store`：获取 store 中的完整内容，包含中间件等
+
+那如果我们在调用 `create` 时，在内部实现一个函数，这个函数中处理上述三个参数，**在 set 和 get 时做一些自定义处理**，例如在 set 时更新持久化存储，这样的话不就可以实现中间件了吗？
+
+Zustand 内部也是这样做的，实际用法如下，标黄的部分为新增的内容：
+
+```jsx
+const useStore = create<Store>()(
+  persist(
+    (set) => ({
+      count1: 0,
+      count2: 0,
+      inc1: () => set((state) => ({ count1: state.count1 + 1 })),
+      inc2: () => set((state) => ({ count2: state.count2 + 1 })),
+    }),
+    {
+      name: 'zustand-starter',
+    },
+  ),
+)
+```
+
+让我们来看下 persist 插件中的核心代码：
+
+```jsx
+const persistImpl: PersistImpl = (config, baseOptions) => (set, get, api) => {
+  const setItem = () => {
+    const state = options.partialize({ ...get() })
+    return (storage as PersistStorage<S>).setItem(options.name, {
+      state,
+      version: options.version,
+    })
+  }
+
+  const configResult = config(
+    (...args) => {
+      set(...(args as Parameters<typeof set>))
+      void setItem()
+    },
+    get,
+    api,
+  )
+
+  return configResult
+}
+```
+
+由上述代码可以看到，persist 内部改写了 set 方法，在修改 store 之后异步更新持久化存储，能够实现这样的效果。
+
+[Screen-2025-01-03-083551(1).mp4](</public/static/videos/Screen-2025-01-03-083551(1).mp4>)
+
+## 总结
+
+Zustand V5 相比以往版本，利用了 React 18 引入的 `useSyncExternalStore`，使包体积减少。它以简洁的 API 和灵活的中间件机制获得了高扩展性，同时仍保持了按需渲染带来的性能优势。
+
+通过在示例中展示如何创建 Store、获取和更新状态、以及在订阅时使用 selector 来减少不必要的重渲染，说明了其使用方式，还深入剖析了其内部核心逻辑，包括 `useStore` Hook 调用 `useSyncExternalStore` 时的数据对比流程、中间件的实现原理。
+
+整体而言，Zustand V5 以更精简的体积和极简的用法，为 React 社区提供了一种轻量化、高性能的全新状态管理选择。
