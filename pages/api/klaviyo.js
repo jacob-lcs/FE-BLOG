@@ -34,4 +34,4 @@ export default async (req, res) => {
   }
 }
 
-export const runtime = 'edge';
+export const runtime = 'edge'

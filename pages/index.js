@@ -18,7 +18,7 @@ export default function Home({ posts }) {
     <>
       <PageSEO title={siteMetadata.title} description={siteMetadata.description} />
       <div className="divide-y divide-gray-200 dark:divide-gray-700">
-        <div className="space-y-2 pt-6 pb-8 md:space-y-5">
+        <div className="space-y-2 pb-8 pt-6 md:space-y-5">
           <h1 className="text-3xl font-extrabold leading-9 tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl sm:leading-10 md:text-6xl md:leading-14">
             最新博客
           </h1>
@@ -33,7 +33,7 @@ export default function Home({ posts }) {
             { name: '源码解析', path: '/tags/源码解析' },
           ].map((item) => (
             <div
-              className="mr-4 cursor-pointer rounded-2xl border-2 border-b-amber-500 pt-1 pb-1 pr-3 pl-3 dark:border-b-cyan-500"
+              className="mr-4 cursor-pointer rounded-2xl border-2 border-b-amber-500 pb-1 pl-3 pr-3 pt-1 dark:border-b-cyan-500"
               key={item.path}
             >
               <Link href={item.path}>{item.name}</Link>

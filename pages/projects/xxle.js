@@ -151,7 +151,7 @@ export default function HappyEliminate() {
       <PageSEO title={`开心消消乐 - ${siteMetadata.author}`} description="闲暇时期写的小游戏" />
       <div>
         <div className="text-center text-3xl font-bold">开心消消乐</div>
-        <div className="mt-4 mb-5 text-center">
+        <div className="mb-5 mt-4 text-center">
           <span className="pr-10">得分：{score}分</span>
           <button onClick={init}>点击以重新开始</button>
         </div>
