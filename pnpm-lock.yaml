@@ -27,8 +27,8 @@ importers:
         specifier: 10.4.14
         version: 10.4.14(postcss@8.4.23)
       classnames:
-        specifier: 2.3.2
-        version: 2.3.2
+        specifier: 2.5.1
+        version: 2.5.1
       esbuild:
         specifier: 0.17.17
         version: 0.17.17
@@ -1521,8 +1521,8 @@ packages:
   citeproc@2.4.63:
     resolution: {integrity: sha512-68F95Bp4UbgZU/DBUGQn0qV3HDZLCdI9+Bb2ByrTaNJDL5VEm9LqaiNaxljsvoaExSLEXe1/r6n2Z06SCzW3/Q==}
 
-  classnames@2.3.2:
-    resolution: {integrity: sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==}
+  classnames@2.5.1:
+    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
 
   clean-css@5.3.2:
     resolution: {integrity: sha512-JVJbM+f3d3Q704rF4bqQ5UUyTtuJ0JRKNbTKVEeujCCBoMdkEi+V+e8oktO9qGQNSvHrFTM6JZRXrUvGR1czww==}
@@ -5600,7 +5600,7 @@ snapshots:
 
   citeproc@2.4.63: {}
 
-  classnames@2.3.2: {}
+  classnames@2.5.1: {}
 
   clean-css@5.3.2:
     dependencies:
