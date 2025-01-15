@@ -28,7 +28,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "reading-time": "1.5.0",
-    "rehype-autolink-headings": "6.1.1",
+    "rehype-autolink-headings": "7.1.0",
     "rehype-citation": "1.0.1",
     "rehype-katex": "6.0.2",
     "rehype-preset-minify": "6.0.0",
