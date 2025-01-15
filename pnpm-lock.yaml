@@ -122,7 +122,7 @@ importers:
         version: 8.8.0(eslint@8.38.0)
       eslint-plugin-prettier:
         specifier: 4.2.1
-        version: 4.2.1(eslint-config-prettier@8.8.0(eslint@8.38.0))(eslint@8.38.0)(prettier@2.8.8)
+        version: 4.2.1(eslint-config-prettier@8.8.0(eslint@8.38.0))(eslint@8.38.0)(prettier@3.4.2)
       globby:
         specifier: 13.1.4
         version: 13.1.4
@@ -136,11 +136,11 @@ importers:
         specifier: 13.2.1
         version: 13.2.1
       prettier:
-        specifier: 2.8.8
-        version: 2.8.8
+        specifier: 3.4.2
+        version: 3.4.2
       prettier-plugin-tailwindcss:
         specifier: 0.2.7
-        version: 0.2.7(prettier@2.8.8)
+        version: 0.2.7(prettier@3.4.2)
       socket.io:
         specifier: 4.6.1
         version: 4.6.1
@@ -3288,9 +3288,9 @@ packages:
       prettier-plugin-twig-melody:
         optional: true
 
-  prettier@2.8.8:
-    resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
-    engines: {node: '>=10.13.0'}
+  prettier@3.4.2:
+    resolution: {integrity: sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==}
+    engines: {node: '>=14'}
     hasBin: true
 
   process-nextick-args@2.0.1:
@@ -6103,10 +6103,10 @@ snapshots:
       object.fromentries: 2.0.6
       semver: 6.3.0
 
-  eslint-plugin-prettier@4.2.1(eslint-config-prettier@8.8.0(eslint@8.38.0))(eslint@8.38.0)(prettier@2.8.8):
+  eslint-plugin-prettier@4.2.1(eslint-config-prettier@8.8.0(eslint@8.38.0))(eslint@8.38.0)(prettier@3.4.2):
     dependencies:
       eslint: 8.38.0
-      prettier: 2.8.8
+      prettier: 3.4.2
       prettier-linter-helpers: 1.0.0
     optionalDependencies:
       eslint-config-prettier: 8.8.0(eslint@8.38.0)
@@ -7773,11 +7773,11 @@ snapshots:
     dependencies:
       fast-diff: 1.2.0
 
-  prettier-plugin-tailwindcss@0.2.7(prettier@2.8.8):
+  prettier-plugin-tailwindcss@0.2.7(prettier@3.4.2):
     dependencies:
-      prettier: 2.8.8
+      prettier: 3.4.2
 
-  prettier@2.8.8: {}
+  prettier@3.4.2: {}
 
   process-nextick-args@2.0.1: {}
 
