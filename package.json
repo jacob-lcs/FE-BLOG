@@ -53,7 +53,7 @@
     "globby": "14.0.2",
     "husky": "9.1.7",
     "inquirer": "12.3.2",
-    "lint-staged": "15.3.0",
+    "lint-staged": "15.4.0",
     "prettier": "3.4.2",
     "prettier-plugin-tailwindcss": "0.6.10",
     "socket.io": "4.8.1",
