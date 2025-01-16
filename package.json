@@ -20,7 +20,7 @@
     "esbuild": "0.17.17",
     "github-slugger": "2.0.0",
     "gray-matter": "4.0.3",
-    "image-size": "1.0.2",
+    "image-size": "1.2.0",
     "mdx-bundler": "9.2.1",
     "next": "13.4.10",
     "next-themes": "0.2.1",
