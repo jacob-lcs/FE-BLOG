@@ -1,15 +1,21 @@
 import js from '@eslint/js'
-import nextPlugin from '@next/eslint-plugin-next'
+import globals from 'globals'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 
 export default [
+  {
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.commonjs,
+      },
+    },
+  },
   js.configs.recommended,
   eslintPluginPrettierRecommended,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
-    plugins: {
-      next: nextPlugin,
-    },
     languageOptions: {
       parserOptions: {
         ecmaVersion: 'latest',
