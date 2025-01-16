@@ -9,12 +9,45 @@ yuque: 'https://www.yuque.com/jacob.lcs'
 juejin: 'https://juejin.cn/user/254742428913885'
 ---
 
-### 你好呀 👋
+# Hi 👋, I'm Jacob
 
-你好，我是 Jacob，2020 年毕业于上海大学，目前是从事前端工程师的工作。
+前端工程师 | Frontend Engineer
 
-对开源社区中的新技术充满兴趣，也相信像 `Go`、`Rust` 等语言可以使前端具有突破性的进展。比如说现在开源社区中比较火的 [`SWC`](https://swc.rs/)，其实用 `Rust` 编写，能实现 `Babel` 绝大多数的功能，而且性能强劲。
+## 🚀 About Me
 
-希望我能够为前端开源社区的发展做出贡献。
+- 🎓 Graduated from Shanghai University in 2020
+- 💼 Frontend Engineer at ByteDance (字节)
+- 🌱 Passionate about exploring new frontend technologies
+- 📝 Writing technical blogs at [lcs.show](https://lcs.show)
 
-[![Jacob's GitHub stats](https://github-readme-stats.vercel.app/api?username=jacob-lcs&show_icons=true&theme=dark)](https://github.com/jacob-lcs)
+## 🛠️ Tech Stack
+
+- Frontend: React, Vue, TypeScript, Webpack, JavaScript
+- UI Libraries: Semi Design, Ant Design
+- Backend: Node.js, Python
+- Tools & Others: Git, webpack
+
+## 🎯 Projects
+
+- 📚 [课程管理系统](http://schedule.lcs.show/) - A comprehensive course management and recommendation system with features like course scheduling, recommendations, and group chat
+- 📝 [富文本编辑器](http://editor.lcs.show/) - A lightweight rich text editor with basic formatting features
+- 🎮 [开心消消乐](https://www.lcs.show/projects/xxle) - A Vue-based match-3 puzzle game
+
+## 📖 Recent Blog Posts
+
+- [从零开始使用 webpack5 搭建 react 项目](https://www.lcs.show/blog/common/how-to-create-webpack-react-project)
+- [如何实现 Promise 池](https://www.lcs.show/blog/common/how-to-judge-promise)
+- [一文详解 react-color 实现原理](https://www.lcs.show/blog/common/how-react-color-work)
+
+## 📫 Connect with Me
+
+- Blog: [lcs.show](https://lcs.show)
+- Email: jacob.liucs@gmail.com
+- 语雀: [jacob.lcs](https://www.yuque.com/jacob.lcs)
+- 掘金: [jacob-lcs](https://juejin.cn/user/254742428913885)
+
+![Jacob's GitHub stats](https://github-readme-stats.vercel.app/api?username=jacob-lcs&show_icons=true&theme=radical)
+
+---
+
+_Last updated: December 3, 2024_

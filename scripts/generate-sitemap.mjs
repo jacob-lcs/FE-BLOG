@@ -56,7 +56,7 @@ import siteMetadata from '../data/siteMetadata.mjs'
         </urlset>
     `
 
-  const formatted = prettier.format(sitemap, {
+  const formatted = await prettier.format(sitemap, {
     ...prettierConfig,
     parser: 'html',
   })
