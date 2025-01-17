@@ -1,0 +1,215 @@
+---
+title: 'Immer 是如何实现不可变数据的'
+date: '2025-01-17'
+tags: ['Immer', 'JavaScript', '技术文章']
+draft: false
+summary: 'Immer 是一个用于简化不可变数据操作的库，它通过一种直观的方式让我们能够以可变的方式编写不可变的数据更新逻辑。本文将会以 immer 中 `produce` 方法为例，介绍其实现原理。'
+---
+
+## 引言
+
+在现代前端开发中，状态管理是一个非常重要的课题。随着应用复杂度的增加，如何高效、安全地管理状态成为了开发者们关注的重点。Immer 是一个用于简化不可变数据操作的库，它通过一种直观的方式让我们能够以可变的方式编写不可变的数据更新逻辑。本文将会以 immer 中 `produce` 方法为例，介绍其实现原理。
+
+## 什么是 Immer？
+
+Immer 是一个 JavaScript 库，旨在简化不可变数据结构的操作。它允许开发者以一种看似可变的方式编写代码，但实际上生成的是一个新的不可变对象。这种方式既保留了**不可变数据**的优点，又避免了手动编写繁琐的不可变更新逻辑。
+
+### 基本用法
+
+在深入了解 Immer 的实现原理之前，我们先来看一个简单的例子，了解它的基本用法。
+
+```jsx
+import produce from 'immer'
+
+const baseState = [
+  {
+    title: 'Learn TypeScript',
+    done: true,
+  },
+  {
+    title: 'Try Immer',
+    done: false,
+  },
+]
+
+const nextState = produce(baseState, (draftState) => {
+  draftState.push({ title: 'Tweet about it' })
+  draftState[1].done = true
+})
+
+console.log(nextState === baseState) // false
+```
+
+在这个例子中，`produce` 函数接收一个基础状态 `baseState` 和一个修改函数 `draftState => {...}`。在修改函数中，我们可以像操作可变对象一样修改 `draftState`，但实际上 `produce` 会返回一个新的不可变对象 `nextState`。
+
+## Immer 的核心概念
+
+### 1. Draft State
+
+`Draft State` 是 Immer 中的一个核心概念。当我们调用 `produce` 函数时，Immer 会创建一个 `Draft State`，它是一个代理对象，允许我们以可变的方式修改状态。这个 `Draft State` 并不是原始状态的直接引用，而是一个中间状态，用于记录所有的修改操作。
+
+### 2. Proxy
+
+Immer 使用了 JavaScript 的 `Proxy` 对象来实现 `Draft State`。`Proxy` 是 ES6 引入的一个特性，它允许我们拦截并重新定义对象的基本操作，如属性访问、赋值、删除等。通过 `Proxy`，Immer 能够捕获所有对 `Draft State` 的修改操作，并在后台记录这些操作。
+
+### 3. Structural Sharing（结构共享）
+
+Immer 在生成新的不可变对象时，会尽可能地复用未修改的部分，这种技术称为 `Structural Sharing`。通过这种方式，Immer 能够高效地生成新的不可变对象，而不需要深拷贝整个状态树。
+
+## Immer 的实现原理
+
+### 基本思路
+
+Immer 的核心思想是利用 JavaScript 的 `Proxy` 对象来代理原始数据，使得我们对数据的所有修改都被拦截。它通过创建一个**草稿对象**来捕获所有的变更，并在最后通过 `produce` 函数对变更应用到原始数据，从而返回一个新的不可变数据。
+
+### 核心实现步骤
+
+1. **创建代理对象**:
+
+   Immer 使用 `Proxy` 对象来拦截对数据的所有操作（如读、写、删除等）。这些操作不会直接修改原始数据，而是修改一个**草稿对象**，这个草稿对象会记录下所有的变更。
+
+2. **修改草稿对象**:
+
+   当你修改草稿对象时，`Proxy` 会捕捉到这些修改。它会在内部记录下对草稿的每次操作，包括你修改了哪些字段、字段的新值是什么。
+
+3. **生成新的数据**:
+
+   在修改完草稿对象后，`produce` 会根据草稿对象的变更，生成一个新的数据对象，并返回给用户。
+
+4. **保持原始数据不可变**:
+
+   Immer 会尽量让原始数据保持不变，只有在需要修改时，才会生成一个新的对象。
+
+### 关键源码解析
+
+我们从 `produce` 函数开始，逐步深入了解 Immer 是如何实现这些功能的。
+
+```jsx
+// immerClass.js
+produce: IProduce = (base: any, recipe?: any, patchListener?: any) => {
+  // 1. 创建代理对象
+  const proxy = createProxy(base, undefined)
+
+  // 2. 执行修改操作
+  recipe(proxy);
+
+  // 3. 生成新的数据
+  return processResult(proxy);
+}
+
+```
+
+### 第一步：创建代理
+
+```tsx
+function createProxyProxy(baseState) {
+  // 使用 Proxy 来创建一个草稿对象
+  const { proxy } = Proxy.revocable(baseState, traps)
+  return proxy
+}
+```
+
+上述为简化后的代码，immer 通过 `Proxy.revocable` 创建了一个代理对象，其中 `baseState` 为需要处理成不可变数据的值。traps 是定义的需要进行代理的操作，immer 中定义了 get/set/ownKeys 等一系列属性，保证对数据所有的更改都会经过 proxy，这里我们以最典型的 set 分析。
+
+```tsx
+export const objectTraps: ProxyHandler<ProxyState> = {
+  set(state: ProxyObjectState, prop: string /* strictly not, but helps TS */, value) {
+    if (!state.modified_) {
+      // 检查是否有 copy_ 对象，没有的话就**浅复制**当前对象到 copy_
+      prepareCopy(state)
+      // 将当前对象及其所有的父级对象中的 modified_ 都设置为 true
+      markChanged(state)
+    }
+
+    state.copy_![prop] = value
+    state.assigned_[prop] = true
+    return true
+  },
+}
+```
+
+在 set handler 中，immer 内部会讲用户设置的值赋值到 \_copy 对象中，这个对象会在最后 produce 返回最终值时使用。
+
+看到这里你可能会想，及时使用 Proxy 代理对象，也只会代理最外层的对象，比如以下对象：
+
+```tsx
+const people = {
+  info: {
+    age: 18,
+  },
+}
+```
+
+在这里修改 people.info.age = 20，上述的 set handler 是监听不到的，这就涉及到 set handler 的实现，为了保证性能，immer 并不会遍历对象中的所有属性并进行代理，而是默认代理最外层属性，按需代理内部属性。
+
+当我们执行 [people.info](http://people.info).age = 20 时，immer 会先给 people 设置代理，再给 people.info 设置代理，这样一来，所以我们需要变更的值都可以被监听。代码如下：
+
+```tsx
+export const objectTraps: ProxyHandler<ProxyState> = {
+  get(state, prop) {
+    if (prop === DRAFT_STATE) return state
+
+    const source = latest(state)
+    const value = source[prop]
+    // 检查修改状态中的现有草稿。
+    // 已赋值的值永远不会被草拟。这也会捕获我们创建的任何草稿。
+    if (value === peek(state.base_, prop)) {
+      prepareCopy(state)
+      // 用于按需设置 Proxy
+      return (state.copy_![prop as any] = createProxy(value, state))
+    }
+    return value
+  },
+}
+```
+
+### 第二步：执行修改操作
+
+```jsx
+result = recipe(proxy)
+```
+
+- 这里的 `recipe` 函数是用户传入的函数，它对草稿对象执行实际的修改操作。
+- 因为草稿对象是由 `Proxy` 创建的，所有的修改操作都会被拦截和记录。
+
+### 第三步：生成新的数据
+
+```jsx
+function finishDraft(draft) {
+  // 处理并生成新的对象
+  return finalize(draft)
+}
+
+function finalize(draft) {
+  // 对草稿进行处理并返回新的不可变对象
+  return draft // 这里可以进行更复杂的处理，如合并变更等
+}
+```
+
+- `finishDraft` 函数将草稿对象转化为最终的不可变数据结构。
+- 在实际的实现中，`finalize` 会根据草稿的变更，生成一个新的数据对象，并返回给用户。
+
+### 深入理解：`Proxy` 的拦截机制
+
+在 Immer 中，`Proxy` 被用来捕获对草稿对象的修改。在草稿修改时，`Proxy` 会触发它的 `set`、`get` 等拦截方法，从而将每次修改记录到一个变更列表。每次草稿发生修改时，`Proxy` 都会记录这些操作，并在最后生成新的数据。
+
+```jsx
+const handler = {
+  set(target, key, value) {
+    console.log(`Setting key ${key} to ${value}`)
+    target[key] = value
+    return true
+  },
+}
+
+const proxy = new Proxy({}, handler)
+proxy.foo = 'bar' // 控制台输出 "Setting key foo to bar"
+```
+
+在 Immer 中，`Proxy` 还可以进一步增强，使得草稿对象的修改只对特定字段生效，并且避免对原始对象的任何直接修改。
+
+## 总结
+
+Immer 通过使用 `Proxy` 对象和 `Structural Sharing` 机制，实现了以一种直观的方式编写不可变数据更新逻辑。它允许开发者以可变的方式操作状态，同时生成新的不可变对象，从而避免了手动编写繁琐的不可变更新逻辑。
+
+希望本文能够帮助大家更好地理解 Immer 的工作原理，并在实际项目中灵活运用~
