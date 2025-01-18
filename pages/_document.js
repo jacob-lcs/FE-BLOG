@@ -18,6 +18,7 @@ class MyDocument extends Document {
             href="/static/favicons/favicon-16x16.png"
           />
           <meta name="baidu-site-verification" content="codeva-pYAQU8OXxE" />
+          <meta name="google-adsense-account" content="ca-pub-7669803939408201" />
           <link rel="manifest" href="/static/favicons/site.webmanifest" />
           <link rel="mask-icon" href="/static/favicons/safari-pinned-tab.svg" color="#5bbad5" />
           <meta name="msapplication-TileColor" content="#000000" />
