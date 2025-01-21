@@ -7,6 +7,7 @@ import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import Comments from '@/components/comments'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
+import { useEffect } from 'react'
 
 const editUrl = (fileName) => `${siteMetadata.siteRepo}/blob/master/data/blog/${fileName}`
 
@@ -14,6 +15,10 @@ const postDateTemplate = { weekday: 'long', year: 'numeric', month: 'long', day:
 
 export default function PostLayout({ frontMatter, authorDetails, next, prev, children }) {
   const { slug, fileName, date, title, tags } = frontMatter
+
+  useEffect(() => {
+    ;(window.adsbygoogle || []).push({})
+  }, [])
 
   return (
     <SectionContainer>
@@ -135,6 +140,14 @@ export default function PostLayout({ frontMatter, authorDetails, next, prev, chi
                   &larr; 返回博客列表
                 </Link>
               </div>
+              <ins
+                className="adsbygoogle"
+                style={{ display: 'block', marginTop: '2rem' }}
+                data-ad-client="ca-pub-7669803939408201"
+                data-ad-slot="7543038000"
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              ></ins>
             </footer>
           </div>
         </div>
