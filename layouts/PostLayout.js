@@ -16,6 +16,14 @@ const postDateTemplate = { weekday: 'long', year: 'numeric', month: 'long', day:
 export default function PostLayout({ frontMatter, authorDetails, next, prev, children }) {
   const { slug, fileName, date, title, tags } = frontMatter
 
+  useEffect(() => {
+    try {
+      ;(window.adsbygoogle || []).push({})
+    } catch (err) {
+      console.error(err)
+    }
+  }, [])
+
   return (
     <SectionContainer>
       <BlogSEO
