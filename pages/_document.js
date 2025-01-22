@@ -1,4 +1,6 @@
 import Document, { Html, Head, Main, NextScript } from 'next/document'
+import Script from 'next/script'
+
 class MyDocument extends Document {
   render() {
     return (
@@ -29,6 +31,10 @@ class MyDocument extends Document {
             src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7669803939408201"
             crossorigin="anonymous"
           ></script>
+          <Script
+            src="https://unpkg.com/react-scan/dist/install-hook.global.js"
+            strategy="beforeInteractive"
+          />
         </Head>
         <body className="bg-white text-black antialiased dark:bg-gray-900 dark:text-white">
           <Main />

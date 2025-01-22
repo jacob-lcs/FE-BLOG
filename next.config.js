@@ -1,8 +1,6 @@
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-})
+const ReactComponentName = require('react-scan/react-component-name/webpack').default
 
-module.exports = withBundleAnalyzer({
+module.exports = {
   reactStrictMode: true,
   pageExtensions: ['js', 'jsx', 'md', 'mdx'],
   eslint: {
@@ -13,7 +11,8 @@ module.exports = withBundleAnalyzer({
       test: /\.svg$/,
       use: ['@svgr/webpack'],
     })
+    config.plugins.push(ReactComponentName({}))
 
     return config
   },
-})
+}
