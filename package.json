@@ -55,7 +55,7 @@
     "inquirer": "12.3.2",
     "lint-staged": "15.4.1",
     "prettier": "3.4.2",
-    "prettier-plugin-tailwindcss": "0.6.10",
+    "prettier-plugin-tailwindcss": "0.6.11",
     "socket.io": "4.8.1",
     "socket.io-client": "4.8.1"
   },
