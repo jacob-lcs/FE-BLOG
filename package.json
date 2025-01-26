@@ -45,7 +45,7 @@
     "@types/node": "^22.10.7",
     "cross-env": "7.0.3",
     "dedent": "1.5.3",
-    "eslint": "9.18.0",
+    "eslint": "9.19.0",
     "eslint-config-next": "15.1.6",
     "eslint-config-prettier": "10.0.1",
     "eslint-plugin-prettier": "5.2.3",
