@@ -16,7 +16,7 @@
     "@tailwindcss/typography": "0.5.16",
     "autoprefixer": "10.4.20",
     "classnames": "2.5.1",
-    "esbuild": "0.24.2",
+    "esbuild": "0.25.0",
     "github-slugger": "2.0.0",
     "gray-matter": "4.0.3",
     "image-size": "1.2.0",
