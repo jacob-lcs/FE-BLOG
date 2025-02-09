@@ -121,8 +121,8 @@ importers:
         specifier: ^15.14.0
         version: 15.14.0
       globby:
-        specifier: 14.0.2
-        version: 14.0.2
+        specifier: 14.1.0
+        version: 14.1.0
       husky:
         specifier: 9.1.7
         version: 9.1.7
@@ -2804,8 +2804,8 @@ packages:
     resolution: {integrity: sha512-DpLKbNU4WylpxJykQujfCcwYWiV/Jhm50Goo0wrVILAv5jOr9d+H+UR3PhSCD2rCCEIg0uc+G+muBTwD54JhDQ==}
     engines: {node: '>= 0.4'}
 
-  globby@14.0.2:
-    resolution: {integrity: sha512-s3Fq41ZVh7vbbe2PN3nrW7yC7U7MFVc5c98/iTl9c2GawNMKx/J648KQRW6WKkuU8GIbbh2IXfIRQjOZnXcTnw==}
+  globby@14.1.0:
+    resolution: {integrity: sha512-0Ia46fDOaT7k4og1PDW4YbodWWr3scS2vAr2lTbsplOt2WkKp0vQbkI9wKis/T5LV/dqPjO3bpS/z6GTJB82LA==}
     engines: {node: '>=18'}
 
   gopd@1.2.0:
@@ -2948,6 +2948,10 @@ packages:
 
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
+    engines: {node: '>= 4'}
+
+  ignore@7.0.3:
+    resolution: {integrity: sha512-bAH5jbK/F3T3Jls4I0SO1hmPR0dKU0a7+SY6n1yzRtG54FLO8d6w/nxLFX2Nb7dBu6cCWXPaAME6cYqFUMmuCA==}
     engines: {node: '>= 4'}
 
   image-size@1.2.0:
@@ -3715,9 +3719,9 @@ packages:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
 
-  path-type@5.0.0:
-    resolution: {integrity: sha512-5HviZNaZcfqP95rwpv+1HDgUamezbqdSYTyzjTvwtJSnIH+3vnbmWsItli8OFEndS984VT55M3jduxZbX351gg==}
-    engines: {node: '>=12'}
+  path-type@6.0.0:
+    resolution: {integrity: sha512-Vj7sf++t5pBD637NSfkxpHSMfWaeig5+DKWLhcqIYx6mWQz5hdJTGDVMQiJcw1ZYkhs7AazKDGpRVji1LJCZUQ==}
+    engines: {node: '>=18'}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -4528,8 +4532,8 @@ packages:
     resolution: {integrity: sha512-6t3foTQI9qne+OZoVQB/8x8rk2k1eVy1gRXhV3oFQ5T6R1dqQ1xtin3XqSlx3+ATBkliTaR/hHyJBm+LVPNM8w==}
     engines: {node: '>=4'}
 
-  unicorn-magic@0.1.0:
-    resolution: {integrity: sha512-lRfVq8fE8gz6QMBuDM6a+LO3IAzTi05H6gCVaUpir2E1Rwpo4ZUog45KpNXKC/Mn3Yb9UDuHumeFTo9iV/D9FQ==}
+  unicorn-magic@0.3.0:
+    resolution: {integrity: sha512-+QBBXBCvifc56fsbuxZQ6Sic3wqqc3WWaqxs58gvJrcOuN83HGTCwz3oS5phzU9LthRNE9VrJCFCLUgHeeFnfA==}
     engines: {node: '>=18'}
 
   unified@11.0.5:
@@ -7607,14 +7611,14 @@ snapshots:
       define-properties: 1.2.1
       gopd: 1.2.0
 
-  globby@14.0.2:
+  globby@14.1.0:
     dependencies:
       '@sindresorhus/merge-streams': 2.3.0
       fast-glob: 3.3.3
-      ignore: 5.3.2
-      path-type: 5.0.0
+      ignore: 7.0.3
+      path-type: 6.0.0
       slash: 5.1.0
-      unicorn-magic: 0.1.0
+      unicorn-magic: 0.3.0
 
   gopd@1.2.0: {}
 
@@ -7847,6 +7851,8 @@ snapshots:
   ieee754@1.2.1: {}
 
   ignore@5.3.2: {}
+
+  ignore@7.0.3: {}
 
   image-size@1.2.0:
     dependencies:
@@ -8897,7 +8903,7 @@ snapshots:
 
   path-type@4.0.0: {}
 
-  path-type@5.0.0: {}
+  path-type@6.0.0: {}
 
   picocolors@1.1.1: {}
 
@@ -9999,7 +10005,7 @@ snapshots:
 
   unicode-property-aliases-ecmascript@2.1.0: {}
 
-  unicorn-magic@0.1.0: {}
+  unicorn-magic@0.3.0: {}
 
   unified@11.0.5:
     dependencies:
