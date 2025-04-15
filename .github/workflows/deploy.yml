@@ -60,7 +60,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}        # 服务器登录用户名
           password: ${{ secrets.SERVER_PASSWORD }}           # 用于 SSH 连接的私钥
           port: ${{ secrets.SERVER_PORT || 22 }}        # 服务器 SSH 端口 (默认为 22)
-          source: ".next,package.json,next.config.js,pnpm-lock.yaml,public"
+          source: ".next/*,package.json,next.config.js,pnpm-lock.yaml,public"
           target: "/home/admin/projects/FE-BLOG"      # 你服务器上存放应用的绝对路径
           strip_components: 0
 
@@ -75,5 +75,6 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
             cd /home/admin/projects/FE-BLOG
+            whoami
             pm2 restart fe-blog
             echo "Deployment finished!"
