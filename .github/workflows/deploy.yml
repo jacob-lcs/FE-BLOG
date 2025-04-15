@@ -75,6 +75,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
             cd /home/admin/projects/FE-BLOG
+            pnpm i
             whoami
             pm2 restart fe-blog
             echo "Deployment finished!"
