@@ -65,7 +65,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
             cd /home/admin/projects/FE-BLOG
-            pnpm i
+            PATH=/home/admin/.nvm/versions/node/v22.14.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin && pnpm i
             whoami
-            pm2 restart fe-blog
+            PATH=/home/admin/.nvm/versions/node/v22.14.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin && pm2 restart fe-blog
             echo "Deployment finished!"
