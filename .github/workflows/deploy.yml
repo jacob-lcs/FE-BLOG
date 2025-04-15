@@ -24,9 +24,12 @@ jobs:
           node-version: '22' # 例如使用 Node.js 22.x
           cache: 'pnpm' # 启用依赖缓存加速后续构建
 
+      - name: Enable Corepack
+        run: corepack enable
+
       # 4. 设置环境：安装依赖
       - name: Install Dependencies
-        run: pnpm install # 或者 yarn install, pnpm install
+        run: corepack pnpm install
 
       # 5. 构建应用
       #    如果你的 package.json 中有 "build": "next build"，可以直接用 npm run build
