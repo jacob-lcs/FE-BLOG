@@ -1,0 +1,66 @@
+name: Deploy Next.js to Server
+
+# 1. 触发条件：当代码推送到 master 分支时触发
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    # 2. 构建环境：使用最新的 Ubuntu 环境
+    runs-on: ubuntu-latest
+
+    steps:
+      # 3. 检出代码
+      - name: Checkout Repository
+        uses: actions/checkout@v4 # 建议使用明确的版本号
+
+      # 4. 设置环境：安装 Node.js
+      #    请根据你的项目要求选择合适的 Node.js 版本
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # 例如使用 Node.js 22.x
+          cache: 'pnpm' # 启用依赖缓存加速后续构建
+
+      # 4. 设置环境：安装依赖
+      - name: Install Dependencies
+        run: pnpm install # 或者 yarn install, pnpm install
+
+      # 5. 构建应用
+      #    如果你的 package.json 中有 "build": "next build"，可以直接用 npm run build
+      #    如果需要静态导出 (output: 'export')，构建产物在 'out' 目录
+      #    否则，标准构建产物在 '.next' 目录 (需要 Node.js 服务器运行 next start)
+      - name: Build Next.js Application
+        run: pnpm run build # 确保你的 package.json 有对应的 build 脚本
+        # 如果你需要环境变量进行构建，可以在这里设置
+        # env:
+        #   NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+      # 6. 部署产物：使用 SSH (scp 或 rsync) 将构建文件传输到服务器
+      #    这里使用 appleboy/scp-action 插件，需要配置 SSH 密钥
+      - name: Deploy to Server via SCP
+        uses: appleboy/scp-action@master # 生产环境建议使用具体的版本标签，例如 @v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}              # 服务器 IP 地址或域名
+          username: ${{ secrets.SERVER_USERNAME }}        # 服务器登录用户名
+          password: ${{ secrets.SERVER_PASSWORD }}           # 用于 SSH 连接的私钥
+          port: ${{ secrets.SERVER_PORT || 22 }}        # 服务器 SSH 端口 (默认为 22)
+          source: "{.next,package.json,next.config.js,pnpm-lock.yaml,public}/"
+          target: "/home/admin/projects/FE-BLOG"      # 你服务器上存放应用的绝对路径
+          strip_components: 0
+
+      # 7. (可选) 服务器操作：在部署后执行命令 (例如重启服务)
+      #    可以使用 appleboy/ssh-action 插件
+      - name: Execute Post-Deploy Commands on Server
+        uses: appleboy/ssh-action@master # 生产环境建议使用具体的版本标签，例如 @v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            cd /home/admin/projects/FE-BLOG
+            pm2 restart fe-blog
+            echo "Deployment finished!"
