@@ -64,6 +64,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
+            source ~/.bashrc || source ~/.profile || true
             cd /home/admin/projects/FE-BLOG
             pnpm i
             whoami
