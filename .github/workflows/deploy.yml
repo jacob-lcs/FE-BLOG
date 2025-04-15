@@ -40,17 +40,6 @@ jobs:
         # env:
         #   NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
-      - name: Remove old build files
-        uses: appleboy/ssh-action@master # 生产环境建议使用具体的版本标签，例如 @v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}              # 服务器 IP 地址或域名
-          username: ${{ secrets.SERVER_USERNAME }}        # 服务器登录用户名
-          password: ${{ secrets.SERVER_PASSWORD }}           # 用于 SSH 连接的私钥
-          port: ${{ secrets.SERVER_PORT || 22 }}        # 服务器 SSH 端口 (默认为 22)
-          script: |
-            rm -rf /home/admin/projects/FE-BLOG
-            echo "Delete finished!"
-
       # 6. 部署产物：使用 SSH (scp 或 rsync) 将构建文件传输到服务器
       #    这里使用 appleboy/scp-action 插件，需要配置 SSH 密钥
       - name: Deploy to Server via SCP
@@ -63,6 +52,7 @@ jobs:
           source: ".next/*,package.json,next.config.js,pnpm-lock.yaml,public"
           target: "/home/admin/projects/FE-BLOG"      # 你服务器上存放应用的绝对路径
           strip_components: 0
+          rm: true
 
       # 7. (可选) 服务器操作：在部署后执行命令 (例如重启服务)
       #    可以使用 appleboy/ssh-action 插件
