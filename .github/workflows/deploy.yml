@@ -65,7 +65,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
             cd /home/admin/projects/FE-BLOG
-            /home/admin/.nvm/versions/node/v22.14.0/bin/corepack pnpm i
+            pnpm i
             whoami
-            /home/admin/.nvm/versions/node/v22.14.0/bin/pm2 restart fe-blog
+            pm2 restart fe-blog
             echo "Deployment finished!"
