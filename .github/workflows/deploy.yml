@@ -22,7 +22,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22' # 例如使用 Node.js 22.x
-          cache: 'pnpm' # 启用依赖缓存加速后续构建
 
       - name: Enable Corepack
         run: corepack enable
