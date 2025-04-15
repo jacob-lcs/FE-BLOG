@@ -64,9 +64,8 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
-            source ~/.bashrc || source ~/.profile || true
             cd /home/admin/projects/FE-BLOG
-            pnpm i
+            /home/admin/.nvm/versions/node/v22.14.0/bin/pnpm i
             whoami
-            pm2 restart fe-blog
+            /home/admin/.nvm/versions/node/v22.14.0/bin/pm2 restart fe-blog
             echo "Deployment finished!"
