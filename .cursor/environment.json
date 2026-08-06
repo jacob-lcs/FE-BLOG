@@ -1,0 +1,17 @@
+{
+  "name": "FE-BLOG",
+  "install": "corepack pnpm install --frozen-lockfile",
+  "terminals": [
+    {
+      "name": "dev",
+      "command": "corepack pnpm run dev",
+      "description": "Next.js development server, serving the blog at http://localhost:3000"
+    }
+  ],
+  "ports": [
+    {
+      "name": "Next.js dev server",
+      "port": 3000
+    }
+  ]
+}
